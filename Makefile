@@ -3,6 +3,6 @@ prepare_test:
 				-v ${PWD}:/host-pwd \
 				-v ${PWD}/../swm:/host-swm \
 				openapitools/openapi-generator-cli generate \
-					-g python \
+					-g python-flask \
 					-i /host-swm/priv/openapi.yaml \
 					-o /host-pwd/test/mocked-server

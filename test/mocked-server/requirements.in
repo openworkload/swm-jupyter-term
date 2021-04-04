@@ -1,5 +1,0 @@
-python_dateutil
-setuptools
-urllib3
-fastapi
-dataclasses==0.6
