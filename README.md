@@ -1,14 +1,14 @@
-SkyPort Terminal for JupyterLab
+Sky Port Terminal for JupyterLab
 ===============================
 
-# SkyPort project
+# Sky Port project
 
-SkyPort is an universal bus between user software and compute resources.
+Sky Port is an universal bus between user software and compute resources.
 It can also be considered as a transportation layer between workload producers
 and compute resource providers. Sky Port makes it easy to connect user software
 to different cloud resources.
 
-# SkyPort JupyterLab integration
+# Sky Port JupyterLab integration
 
 The current project consists of two components:
 
