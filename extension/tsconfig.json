@@ -16,9 +16,8 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "target": "es2017",
-    "sourceMap": true,
     "types": [ "node" ],
     "typeRoots": [ "node_modules/@types" ]
   },

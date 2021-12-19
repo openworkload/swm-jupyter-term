@@ -1,9 +1,4 @@
 import {
-    JupyterFrontEnd,
-    JupyterFrontEndPlugin
-} from '@jupyterlab/application';
-
-import {
     ICommandPalette,
     MainAreaWidget
 } from '@jupyterlab/apputils';
@@ -17,20 +12,35 @@ import {
     IMainMenu
 } from '@jupyterlab/mainmenu';
 
-//import * as fs from 'fs-extra';
-//import * as fs from "fs";
-import {promises as fs} from 'fs';
-//import fs from 'fs';
+import {
+  JupyterFrontEnd,
+  JupyterFrontEndPlugin
+} from '@jupyterlab/application';
+
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
+
+import { requestAPI } from './handler';
 
 /**
- * Initialization data for the swm-jupyter-terminal extension.
+ * Initialization data for the swm-jupyter-term extension.
  */
-const extension: JupyterFrontEndPlugin<void> = {
-  id: 'swm-jupyter-terminal:plugin',
+const plugin: JupyterFrontEndPlugin<void> = {
+  id: 'swm-jupyter-term:plugin',
   autoStart: true,
-  requires: [ICommandPalette, IMainMenu],
-  activate: (app: JupyterFrontEnd, palette: ICommandPalette,  mainMenu: IMainMenu) => {
-    console.log('JupyterLab extension swm-jupyter-terminal is activated');
+  optional: [ISettingRegistry, ICommandPalette, IMainMenu],
+  activate: (app: JupyterFrontEnd, settingRegistry: ISettingRegistry | null, palette: ICommandPalette,  mainMenu: IMainMenu) => {
+    console.log('JupyterLab extension swm-jupyter-term is activated!');
+
+    if (settingRegistry) {
+      settingRegistry
+        .load(plugin.id)
+        .then(settings => {
+          console.log('swm-jupyter-term settings loaded:', settings.composite);
+        })
+        .catch(reason => {
+          console.error('Failed to load settings for swm-jupyter-term.', reason);
+        });
+    }
 
     const { commands } = app;
     const skyportMenu: Menu = new Menu({ commands });
@@ -43,16 +53,17 @@ const extension: JupyterFrontEndPlugin<void> = {
   }
 };
 
-export default extension;
+export default plugin;
+
 
 function add_config_config(skyport_menu: Menu, palette: ICommandPalette, app: JupyterFrontEnd) {
     const category = 'Sky Port';
-    const command = 'swm-jupyter-terminal:main-menu-config';
+    const command = 'swm-jupyter-term:main-menu-config';
     app.commands.addCommand(command, {
       label: 'Configure Spawner',
       caption: 'Configure Sky Port',
       execute: (args: any) => {
-        create_main_area_widget("swm-jupyter-terminal:config", "Sky Port Configuration", app);
+        create_main_area_widget("swm-jupyter-term:config", "Sky Port Configuration", app);
       }
     });
     palette.addItem({
@@ -65,12 +76,12 @@ function add_config_config(skyport_menu: Menu, palette: ICommandPalette, app: Ju
 
 function add_config_jobs(skyport_menu: Menu, palette: ICommandPalette, app: JupyterFrontEnd) {
     const category = 'Sky Port';
-    const command = 'swm-jupyter-terminal:main-menu-jobs';
+    const command = 'swm-jupyter-term:main-menu-jobs';
     app.commands.addCommand(command, {
       label: 'Show Jobs',
       caption: 'Show Sky Port jobs of the current user',
       execute: (args: any) => {
-        let widget = create_main_area_widget("swm-jupyter-terminal:jobs", "Sky Port Jobs", app);
+        let widget = create_main_area_widget("swm-jupyter-term:jobs", "Sky Port Jobs", app);
         fetch_jobs(widget);
       }
     });
@@ -84,12 +95,12 @@ function add_config_jobs(skyport_menu: Menu, palette: ICommandPalette, app: Jupy
 
 function add_config_resources(skyport_menu: Menu, palette: ICommandPalette, app: JupyterFrontEnd) {
     const category = 'Sky Port';
-    const command = 'swm-jupyter-terminal:main-menu-res';
+    const command = 'swm-jupyter-term:main-menu-res';
     app.commands.addCommand(command, {
       label: 'Show Resources',
       caption: 'Show Sky Port resources',
       execute: (args: any) => {
-        create_main_area_widget("swm-jupyter-terminal:res", "Sky Port Resources", app);
+        create_main_area_widget("swm-jupyter-term:res", "Sky Port Resources", app);
       }
     });
     palette.addItem({
@@ -122,7 +133,7 @@ function add_table_cell(item: Node, row: Element) {
   row.appendChild(cell);
 }
 
-function fetch_jobs(widget: MainAreaWidget) {
+async function fetch_jobs(widget: MainAreaWidget) {
     console.log('Fetch Sky Port jobs');
     let table = document.createElement("table");
     table.setAttribute("border", "2");
@@ -139,27 +150,15 @@ function fetch_jobs(widget: MainAreaWidget) {
     add_table_cell(document.createTextNode("Resources"), header_row);
     table_body.appendChild(header_row);
 
-    //const fs = require('fs-extra')
-    var https = require('https');
-    //var fs  = require('fs-extra');
-    let options = {
-      hostname: 'ts',
-      port: 8443,
-      path: '/user/job',
-      method: 'GET',
-      key: fs.readFile('/home/taras/.swm/key.pem'),
-      cert: fs.readFile('/home/taras/.swm/key.cert')
-    };
-    console.log(options);
-    let req = https.request(options, function(res: any) {
-      console.log(res.statusCode);
-      res.on('data', function(d: any) {
-                       process.stdout.write(d);
-                     }
-            );
-    });
-    req.end();
-
+    requestAPI<any>('get_example')
+      .then(data => {
+        console.log(data);
+      })
+      .catch(reason => {
+        console.error(
+          `The swm_jupyter_term server extension appears to be missing.\n${reason}`
+        );
+      });
 
     for (var i = 0; i < 2; i++) {
       var row = document.createElement("tr");

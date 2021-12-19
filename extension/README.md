@@ -1,6 +1,13 @@
-A JupyterLab extension for Sky Port Terminal
-==============================================
+# swm_jupyter_term
 
+[![Github Actions Status](https://github.com/skyworkflows/swm-jupyter-term/workflows/Build/badge.svg)](https://github.com/skyworkflows/swm-jupyter-term/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/skyworkflows/swm-jupyter-term/main?urlpath=lab)
+
+A JupyterLab extension for Sky Port Terminal.
+
+
+This extension is composed of a Python package named `swm_jupyter_term`
+for the server extension and a NPM package named `swm-jupyter-term`
+for the frontend extension.
 
 ## Development environment
 
@@ -14,12 +21,6 @@ conda activate jupyterlab-ext
 ## Deactivate
 conda deactivate
 
-## Rebuild on change
-jlpm run watch
-
-### See also
-* https://jupyterlab.readthedocs.io/en/stable/extension/extension_tutorial.html#extension-tutorial
-
 
 ## Requirements
 
@@ -27,8 +28,35 @@ jlpm run watch
 
 ## Install
 
+To install the extension, execute:
+
 ```bash
-pip install swm-jupyter-terminal
+pip install swm_jupyter_term
+```
+
+## Uninstall
+
+To remove the extension, execute:
+
+```bash
+pip uninstall swm_jupyter_term
+```
+
+
+## Troubleshoot
+
+If you are seeing the frontend extension, but it is not working, check
+that the server extension is enabled:
+
+```bash
+jupyter server extension list
+```
+
+If the server extension is installed and enabled, but you are not seeing
+the frontend extension, check the frontend extension is installed:
+
+```bash
+jupyter labextension list
 ```
 
 
@@ -44,11 +72,13 @@ The `jlpm` command is JupyterLab's pinned version of
 
 ```bash
 # Clone the repo to your local environment
-# Change directory to the swm-jupyter-terminal directory
+# Change directory to the swm_jupyter_term directory
 # Install package in development mode
 pip install -e .
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
+# Server extension must be manually installed in develop mode
+jupyter server extension enable swm_jupyter_term
 # Rebuild extension Typescript source after making changes
 jlpm run build
 ```
@@ -70,20 +100,18 @@ By default, the `jlpm run build` command generates the source maps for this exte
 jupyter lab build --minimize=False
 ```
 
-### Uninstall
+### Development uninstall
 
 ```bash
-pip uninstall swm-jupyter-terminal
+# Server extension must be manually disabled in develop mode
+jupyter server extension disable swm_jupyter_term
+pip uninstall swm_jupyter_term
 ```
 
-# Contributing
+In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
+command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
+folder is located. Then you can remove the symlink named `swm-jupyter-term` within that folder.
 
-We appreciate all contributions. If you are planning to contribute back bug-fixes, please do so
-without any further discussion. If you plan to contribute new features, utility functions or extensions,
-please first open an issue and discuss the feature with us. 
+### Packaging the extension
 
-# License
-
-We use a shared copyright model that enables all contributors to maintain the copyright on their contributions.
-
-This software is licensed under the BSD-3-Clause license.
+See [RELEASE](RELEASE.md)
