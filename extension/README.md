@@ -31,7 +31,7 @@ conda deactivate
 To install the extension, execute:
 
 ```bash
-pip install swm_jupyter_term
+pip install swmclient swm_jupyter_term
 ```
 
 ## Uninstall
@@ -39,7 +39,7 @@ pip install swm_jupyter_term
 To remove the extension, execute:
 
 ```bash
-pip uninstall swm_jupyter_term
+pip uninstall swmclient swm_jupyter_term
 ```
 
 
@@ -112,6 +112,33 @@ In development mode, you will also need to remove the symlink created by `jupyte
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
 folder is located. Then you can remove the symlink named `swm-jupyter-term` within that folder.
 
+
+### Before commit
+
+Make sure that eslint passes:
+
+```bash
+jlpm run eslint:check
+```
+
+If there are any issues it might be possible to autofix them with:
+
+```bash
+jlpm run eslint
+```
+
+Run tests:
+
+```bash
+python -m pytest
+```
+
 ### Packaging the extension
 
 See [RELEASE](RELEASE.md)
+
+### Additional links
+
+* https://jupyter-server.readthedocs.io/en/latest/developers/extensions.html
+* https://github.com/jupyterlab/extension-examples/tree/master/server-extension
+* https://github.com/jupyterlab-contrib/spellchecker
