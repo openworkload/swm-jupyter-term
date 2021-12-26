@@ -22,6 +22,8 @@ colorama==0.4.4
     # via twine
 cryptography==36.0.1
     # via secretstorage
+deprecation==2.1.0
+    # via jupyter-packaging
 docutils==0.18.1
     # via readme-renderer
 flake8==4.0.1
@@ -38,6 +40,8 @@ jeepney==0.7.1
     # via
     #   keyring
     #   secretstorage
+jupyter-packaging==0.11.1
+    # via -r requirements.in
 keyring==23.4.0
     # via twine
 mccabe==0.6.1
@@ -49,7 +53,10 @@ mypy-extensions==0.4.3
     #   black
     #   mypy
 packaging==21.3
-    # via bleach
+    # via
+    #   bleach
+    #   deprecation
+    #   jupyter-packaging
 pathspec==0.9.0
     # via black
 pkginfo==1.8.2
@@ -88,6 +95,8 @@ tomli==1.2.3
     # via
     #   black
     #   mypy
+tomlkit==0.8.0
+    # via jupyter-packaging
 tqdm==4.62.3
     # via
     #   -r requirements.in
@@ -103,7 +112,9 @@ urllib3==1.26.7
 webencodings==0.5.1
     # via bleach
 wheel==0.37.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   jupyter-packaging
 zipp==3.6.0
     # via importlib-metadata
 

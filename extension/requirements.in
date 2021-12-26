@@ -8,4 +8,5 @@ tqdm
 twine
 wheel
 
+jupyter-packaging
 swmclient

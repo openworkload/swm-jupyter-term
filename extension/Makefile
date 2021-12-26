@@ -9,7 +9,6 @@ ALLMODULES=$(patsubst %.py, %.py, $(wildcard test*.py))
 prepare-venv: .SHELLFLAGS := -euo pipefail -c
 prepare-venv: SHELL := bash
 prepare-venv:
-	$(PYTHON) -m pip install 'virtualenv>=16.4.3' 'pip-tools'
 	virtualenv --system-site-packages .venv
 	$(VENV_BIN)/pip install --ignore-installed --no-deps -r requirements.txt
 
@@ -37,6 +36,7 @@ clean:
 
 .PHONY: upload
 upload:
+	. .venv/bin/activate
 	$(PYTHON) -m twine upload --verbose --config-file .pypirc dist/*
 
 .PHONY: test
