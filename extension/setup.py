@@ -63,7 +63,17 @@ setup_args = dict(
     include_package_data=True,
     python_requires=">=3.9, <4",
     platforms="Linux, Mac OS X, Windows",
-    keywords=["Jupyter", "JupyterLab", "JupyterLab3"],
+    keywords=[
+        "Jupyter",
+        "JupyterLab",
+        "JupyterLab3",
+        "HPC",
+        "High Performance Computing",
+        "Cloud Computing",
+        "SWM",
+        "Sky Port",
+        "Sky Workload Manager"
+    ],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: BSD License",
