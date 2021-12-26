@@ -15,3 +15,32 @@ npm = ["jlpm"]
 
 [tool.check-manifest]
 ignore = ["swm_jupyter_term/labextension/**", "yarn.lock", ".*", "package-lock.json"]
+
+[tool.black]
+line-length = 120
+target_version = ['py39']
+exclude = '''
+(
+  /(
+    | \.git
+    | \.venv
+    | \.mypy_cache
+  )/
+)
+'''
+
+[tool.isort]
+line_length = 120
+profile = "black"
+
+[tool.mypy]
+python_version = 3.9
+strict = true
+follow_imports = "silent"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+allow_untyped_defs = true
+allow_incomplete_defs = true
+allow_untyped_calls = true
