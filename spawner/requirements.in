@@ -1,0 +1,12 @@
+autoflake
+black
+flake8
+isort
+mypy
+setuptools
+tqdm
+twine
+wheel
+
+jupyterhub
+swmclient

@@ -1,0 +1,46 @@
+[build-system]
+requires = ["jupyter_packaging~=0.10,<2", "jupyterlab~=3.1"]
+build-backend = "jupyter_packaging.build_api"
+
+[tool.jupyter-packaging.options]
+skip-if-exists = ["swm_jupyter_term/labextension/static/style.js"]
+ensured-targets = ["swm_jupyter_term/labextension/static/style.js", "swm_jupyter_term/labextension/package.json"]
+
+[tool.jupyter-packaging.builder]
+factory = "jupyter_packaging.npm_builder"
+
+[tool.jupyter-packaging.build-args]
+build_cmd = "build:prod"
+npm = ["jlpm"]
+
+[tool.check-manifest]
+ignore = ["swm_jupyter_term/labextension/**", "yarn.lock", ".*", "package-lock.json"]
+
+[tool.black]
+line-length = 120
+target_version = ['py39']
+exclude = '''
+(
+  /(
+    | \.git
+    | \.venv
+    | \.mypy_cache
+  )/
+)
+'''
+
+[tool.isort]
+line_length = 120
+profile = "black"
+
+[tool.mypy]
+python_version = 3.9
+strict = true
+follow_imports = "silent"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+allow_untyped_defs = true
+allow_incomplete_defs = true
+allow_untyped_calls = true
