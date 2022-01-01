@@ -1,3 +1,5 @@
+import socket
+
 from jupyterhub.spawner import Spawner
 from swmclient.api import SwmApi
 from traitlets import Bool, Integer, Unicode, observe
@@ -45,8 +47,8 @@ class SwmSpawner(Spawner):
         """Clear stored state about this spawner."""
         super().clear_state()
         self._job_id = ""
-        self._remote_ip = ""
-        self._remote_port = 0
+        self._remote_ip = "127.0.0.1"
+        self._remote_port = 8888
 
     async def start(self):
         """Start single-user server over SWM."""
@@ -58,7 +60,7 @@ class SwmSpawner(Spawner):
         if not self._job_id:
             return None
 
-        # TODO get ip and port of the remote container where singluser server runs
+        await self._wait_job_start()
         return self._remote_ip, self._remote_port
 
     async def poll(self):
@@ -121,6 +123,33 @@ class SwmSpawner(Spawner):
                 self.log.debug(f"Cancel RPC resulting line: {line.strip()})
         else:
             self.log.debug("Can't cancel job: ID is unknown")
+
+
+    async def _wait_job_start(self) -> typing.Tuple[]:
+        if not self._job_id:
+            self.log.debug("Can't fetch job: ID is unknown")
+
+        while True:
+            if job := self._get_swm_api.get_job(self._job_id):
+                self.log.debug(f"Fetched job state: {job.state!s}")
+                if job.state == JobState.R:
+                    if job.node_ips:
+                        self._remote_ip = job.node_ips[0]
+                        self.log.debug(f"Job {self._job_id} main node IP: {self._remote_ip}")
+                    else:
+                        self.log.debug(f"Job {self._job_id} node IP list is empty")
+                    break
+                elif job.state == JobState.F:
+                    self.log.debug(f"Job {self._job_id} already finished")
+                    break
+                elif job.state == JobState.C:
+                    self.log.debug(f"Job {self._job_id} is canceled")
+                    break
+                elif job.state in [JobState.Q, JobState.W, JobState.T]:
+                    self.log.debug(f"Job {self._job_id} is not started yet, state={job.state!s}")
+            else:
+                self.log.debug(f"Fetching job RPC did not return anything")
+
 
     @observe("remote_host")
     def _log_remote_host(self, change):
