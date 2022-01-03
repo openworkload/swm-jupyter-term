@@ -109,3 +109,4 @@ dmypy.json
 swm_jupyter_ext/labextension
 jupyterhub.sqlite
 jupyterhub_cookie_secret
+jupyterhub-proxy.pid

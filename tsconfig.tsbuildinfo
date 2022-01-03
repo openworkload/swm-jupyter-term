@@ -647,7 +647,7 @@
         "affectsGlobalScope": false
       },
       "./src/handler.ts": {
-        "version": "58e67c7617fb6c001ddef3f89b2b64aa2f89b8ff2a0530c791e0279da114157e",
+        "version": "78e4b3143d899708627589e2519b8808794f66b51cbb3cf7df3b6f968b870800",
         "signature": "daeb12a8a8880a6ee02b74817ba972e5542c3a3fc8daf2fbe258f9cb70bc9c9d",
         "affectsGlobalScope": false
       },
@@ -2362,8 +2362,8 @@
         "affectsGlobalScope": false
       },
       "./src/index.ts": {
-        "version": "894b8b4992e5f0ff5467d3354ec2ad6cd19c83b4635917e0397e16400dff4b41",
-        "signature": "2d5df385be8891858ef1989dcb5f4bdc7047270ddd7d6f86ece7feadfada6ed5",
+        "version": "6adcd9aa7433f01c96bb2cdac1e328df02038c5a22940c6329663700e35107b6",
+        "signature": "38acc08d3ccfabfe8af7b5ac925e6c17a400fc8214c475ef20e5d8288f93994e",
         "affectsGlobalScope": false
       },
       "./node_modules/@types/node/assert.d.ts": {
@@ -2647,7 +2647,6 @@
       "typeRoots": [
         "./node_modules/@types"
       ],
-      "watch": true,
       "configFilePath": "./tsconfig.json"
     },
     "referencedMap": {

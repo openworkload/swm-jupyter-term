@@ -8,6 +8,9 @@ tqdm
 twine
 wheel
 
+cookiecutter
+
 jupyterhub
+jupyterlab>=3
 jupyter-packaging
 swmclient

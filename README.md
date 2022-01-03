@@ -1,4 +1,4 @@
-[![Github Actions Status](https://github.com/skyworkflows/swm-jupyter-term/workflows/Build/badge.svg)](https://github.com/skyworkflows/swm-jupyter-term/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/skyworkflows/swm-jupyter-term/main?urlpath=lab)
+[!(https://github.com/skyworkflows/swm-jupyter-term/workflows/Build/badge.svg)](https://github.com/skyworkflows/swm-jupyter-term/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/skyworkflows/swm-jupyter-term/main?urlpath=lab)
 
 Sky Port Terminal for JupyterLab
 ===============================
@@ -12,7 +12,7 @@ Sky Port is an universal bus between user software and compute resources. It can
 The current project consists of two components:
 
 * **[JupyterLab extension](#jupyterlab-extension)**
-* **[Jupyter Spawner](#jupyterhab-spawner)**
+* **[JupyterHub spawner](#jupyterhab-spawner)**
 
 The both are python packages that (for a user convinience) are united into a single package `swmjupyter`.
 

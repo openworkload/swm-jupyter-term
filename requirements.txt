@@ -4,65 +4,257 @@
 #
 #    pip-compile requirements.in
 #
+alembic==1.7.5
+    # via jupyterhub
+anyio==3.4.0
+    # via
+    #   httpcore
+    #   jupyter-server
+argon2-cffi==21.3.0
+    # via
+    #   jupyter-server
+    #   notebook
+argon2-cffi-bindings==21.2.0
+    # via argon2-cffi
+arrow==1.2.1
+    # via jinja2-time
+async-generator==1.10
+    # via jupyterhub
+attrs==21.4.0
+    # via jsonschema
 autoflake==1.4
     # via -r requirements.in
+babel==2.9.1
+    # via jupyterlab-server
+backcall==0.2.0
+    # via ipython
+binaryornot==0.4.4
+    # via cookiecutter
 black==21.12b0
     # via -r requirements.in
 bleach==4.1.0
-    # via readme-renderer
+    # via
+    #   nbconvert
+    #   readme-renderer
 certifi==2021.10.8
-    # via requests
+    # via
+    #   httpcore
+    #   httpx
+    #   requests
+certipy==0.1.3
+    # via jupyterhub
 cffi==1.15.0
-    # via cryptography
+    # via
+    #   argon2-cffi-bindings
+    #   cryptography
+chardet==4.0.0
+    # via binaryornot
 charset-normalizer==2.0.9
-    # via requests
+    # via
+    #   httpx
+    #   requests
 click==8.0.3
-    # via black
+    # via
+    #   black
+    #   cookiecutter
 colorama==0.4.4
     # via twine
+cookiecutter==1.7.3
+    # via -r requirements.in
 cryptography==36.0.1
-    # via secretstorage
+    # via
+    #   pyopenssl
+    #   secretstorage
+debugpy==1.5.1
+    # via ipykernel
+decorator==5.1.0
+    # via ipython
+defusedxml==0.7.1
+    # via nbconvert
 deprecation==2.1.0
     # via jupyter-packaging
 docutils==0.18.1
     # via readme-renderer
+entrypoints==0.3
+    # via
+    #   jupyter-client
+    #   jupyterhub
+    #   jupyterlab-server
+    #   nbconvert
 flake8==4.0.1
     # via -r requirements.in
+greenlet==1.1.2
+    # via sqlalchemy
+h11==0.12.0
+    # via httpcore
+httpcore==0.14.3
+    # via httpx
+httpx==0.21.1
+    # via swmclient
 idna==3.3
-    # via requests
+    # via
+    #   anyio
+    #   requests
+    #   rfc3986
 importlib-metadata==4.10.0
     # via
     #   keyring
     #   twine
+ipykernel==6.6.0
+    # via notebook
+ipython==7.30.1
+    # via
+    #   ipykernel
+    #   jupyterlab
+ipython-genutils==0.2.0
+    # via
+    #   jupyter-server
+    #   nbformat
+    #   notebook
 isort==5.10.1
     # via -r requirements.in
+jedi==0.18.1
+    # via ipython
 jeepney==0.7.1
     # via
     #   keyring
     #   secretstorage
+jinja2==3.0.3
+    # via
+    #   cookiecutter
+    #   jinja2-time
+    #   jupyter-server
+    #   jupyterhub
+    #   jupyterlab
+    #   jupyterlab-server
+    #   nbconvert
+    #   notebook
+jinja2-time==0.2.0
+    # via cookiecutter
+json5==0.9.6
+    # via jupyterlab-server
+jsonschema==4.3.3
+    # via
+    #   jupyter-telemetry
+    #   jupyterlab-server
+    #   nbformat
+jupyter-client==7.1.0
+    # via
+    #   ipykernel
+    #   jupyter-server
+    #   nbclient
+    #   notebook
+jupyter-core==4.9.1
+    # via
+    #   jupyter-client
+    #   jupyter-server
+    #   jupyterlab
+    #   nbconvert
+    #   nbformat
+    #   notebook
 jupyter-packaging==0.11.1
     # via -r requirements.in
-keyring==23.4.0
+jupyter-server==1.13.1
+    # via
+    #   jupyterlab
+    #   jupyterlab-server
+    #   nbclassic
+jupyter-telemetry==0.1.0
+    # via jupyterhub
+jupyterhub==2.0.1
+    # via -r requirements.in
+jupyterlab==3.2.5
+    # via -r requirements.in
+jupyterlab-pygments==0.1.2
+    # via nbconvert
+jupyterlab-server==2.10.2
+    # via jupyterlab
+keyring==23.5.0
     # via twine
+mako==1.1.6
+    # via alembic
+markupsafe==2.0.1
+    # via
+    #   jinja2
+    #   mako
+matplotlib-inline==0.1.3
+    # via
+    #   ipykernel
+    #   ipython
 mccabe==0.6.1
     # via flake8
+mistune==0.8.4
+    # via nbconvert
 mypy==0.930
     # via -r requirements.in
 mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
+nbclassic==0.3.4
+    # via jupyterlab
+nbclient==0.5.9
+    # via nbconvert
+nbconvert==6.3.0
+    # via
+    #   jupyter-server
+    #   notebook
+nbformat==5.1.3
+    # via
+    #   jupyter-server
+    #   nbclient
+    #   nbconvert
+    #   notebook
+nest-asyncio==1.5.4
+    # via
+    #   jupyter-client
+    #   nbclient
+    #   notebook
+nodejs==0.1.1
+    # via -r requirements.in
+notebook==6.4.6
+    # via nbclassic
+oauthlib==3.1.1
+    # via jupyterhub
+optional-django==0.1.0
+    # via nodejs
 packaging==21.3
     # via
     #   bleach
     #   deprecation
     #   jupyter-packaging
+    #   jupyterhub
+    #   jupyterlab
+    #   jupyterlab-server
+pamela==1.0.0
+    # via jupyterhub
+pandocfilters==1.5.0
+    # via nbconvert
+parso==0.8.3
+    # via jedi
 pathspec==0.9.0
     # via black
+pexpect==4.8.0
+    # via ipython
+pickleshare==0.7.5
+    # via ipython
 pkginfo==1.8.2
     # via twine
-platformdirs==2.4.0
+platformdirs==2.4.1
     # via black
+poyo==0.5.0
+    # via cookiecutter
+prometheus-client==0.12.0
+    # via
+    #   jupyter-server
+    #   jupyterhub
+    #   notebook
+prompt-toolkit==3.0.24
+    # via ipython
+ptyprocess==0.7.0
+    # via
+    #   pexpect
+    #   terminado
 pycodestyle==2.8.0
     # via flake8
 pycparser==2.21
@@ -71,36 +263,117 @@ pyflakes==2.4.0
     # via
     #   autoflake
     #   flake8
-pygments==2.10.0
-    # via readme-renderer
+pygments==2.11.1
+    # via
+    #   ipython
+    #   jupyterlab-pygments
+    #   nbconvert
+    #   readme-renderer
+pyopenssl==21.0.0
+    # via certipy
 pyparsing==3.0.6
     # via packaging
+pyrsistent==0.18.0
+    # via jsonschema
+python-dateutil==2.8.2
+    # via
+    #   arrow
+    #   jupyter-client
+    #   jupyterhub
+python-json-logger==2.0.2
+    # via jupyter-telemetry
+python-slugify==5.0.2
+    # via cookiecutter
+pytz==2021.3
+    # via babel
+pyzmq==22.3.0
+    # via
+    #   jupyter-client
+    #   jupyter-server
+    #   notebook
 readme-renderer==32.0
     # via twine
 requests==2.26.0
     # via
+    #   cookiecutter
+    #   jupyterhub
+    #   jupyterlab-server
     #   requests-toolbelt
     #   twine
 requests-toolbelt==0.9.1
     # via twine
-rfc3986==1.5.0
-    # via twine
+rfc3986[idna2008]==1.5.0
+    # via
+    #   httpx
+    #   twine
+ruamel.yaml==0.17.20
+    # via jupyter-telemetry
+ruamel.yaml.clib==0.2.6
+    # via ruamel.yaml
 secretstorage==3.3.1
     # via keyring
+send2trash==1.8.0
+    # via
+    #   jupyter-server
+    #   notebook
 six==1.16.0
-    # via bleach
-swmclient==0.1.1
+    # via
+    #   bleach
+    #   cookiecutter
+    #   pyopenssl
+    #   python-dateutil
+sniffio==1.2.0
+    # via
+    #   anyio
+    #   httpcore
+    #   httpx
+sqlalchemy==1.4.29
+    # via
+    #   alembic
+    #   jupyterhub
+swmclient==0.1.2
     # via -r requirements.in
+terminado==0.12.1
+    # via
+    #   jupyter-server
+    #   notebook
+testpath==0.5.0
+    # via nbconvert
+text-unidecode==1.3
+    # via python-slugify
 tomli==1.2.3
     # via
     #   black
     #   mypy
 tomlkit==0.8.0
     # via jupyter-packaging
+tornado==6.1
+    # via
+    #   ipykernel
+    #   jupyter-client
+    #   jupyter-server
+    #   jupyterhub
+    #   jupyterlab
+    #   notebook
+    #   terminado
 tqdm==4.62.3
     # via
     #   -r requirements.in
     #   twine
+traitlets==5.1.1
+    # via
+    #   ipykernel
+    #   ipython
+    #   jupyter-client
+    #   jupyter-core
+    #   jupyter-server
+    #   jupyter-telemetry
+    #   jupyterhub
+    #   matplotlib-inline
+    #   nbclient
+    #   nbconvert
+    #   nbformat
+    #   notebook
 twine==3.7.1
     # via -r requirements.in
 typing-extensions==4.0.1
@@ -109,13 +382,17 @@ typing-extensions==4.0.1
     #   mypy
 urllib3==1.26.7
     # via requests
+wcwidth==0.2.5
+    # via prompt-toolkit
 webencodings==0.5.1
     # via bleach
+websocket-client==1.2.3
+    # via jupyter-server
 wheel==0.37.1
     # via
     #   -r requirements.in
     #   jupyter-packaging
-zipp==3.6.0
+zipp==3.7.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:

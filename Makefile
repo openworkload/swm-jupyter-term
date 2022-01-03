@@ -28,8 +28,7 @@ check:
 .PHONY: package
 package:
 	. .venv/bin/activate
-	$(PYTHON) setup_extension.py bdist_wheel
-	$(PYTHON) setup_spawner.py bdist_wheel
+	$(PYTHON) setup.py bdist_wheel
 
 .PHONY: clean
 clean:

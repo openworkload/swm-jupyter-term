@@ -1,26 +1,24 @@
-"""
-swm_jupyter_ext setup
-"""
-import json
-import sys
-from pathlib import Path
+#!/usr/bin/env python3
 
+import json
+import os
+from pathlib import Path
 import setuptools
+import sys
 
 HERE = Path(__file__).parent.resolve()
 
 # The name of the project
 name = "swmjupyter"
+labext_name = "swm-jupyter-ext"
 
-lab_path = (HERE / name.replace("-", "_") / "labextension")
+lab_path = (HERE / "swm_jupyter_ext" / "labextension")
 
 # Representative files that should exist after a successful build
 ensured_targets = [
     str(lab_path / "package.json"),
     str(lab_path / "static/style.js")
 ]
-
-labext_name = "swm-jupyter-ext"
 
 data_files_spec = [
     ("share/jupyter/labextensions/%s" % labext_name, str(lab_path.relative_to(HERE)), "**"),
@@ -36,29 +34,24 @@ long_description = (HERE / "README.md").read_text()
 
 # Get the package info from package.json
 pkg_json = json.loads((HERE / "package.json").read_bytes())
-version = (
-    pkg_json["version"]
-    .replace("-alpha.", "a")
-    .replace("-beta.", "b")
-    .replace("-rc.", "rc")
-) 
+
+# Get the current package version
+version_ns = {}
+with open(os.path.join(HERE, 'version.py')) as f:
+    exec(f.read(), {}, version_ns)
 
 setup_args = dict(
     name=name,
-    version=version,
+    version=version_ns['__version__'],
     url=pkg_json["homepage"],
     author=pkg_json["author"]["name"],
     author_email=pkg_json["author"]["email"],
-    description=pkg_json["description"],
+    description="Sky Port integration with Jupyter project",
     license=pkg_json["license"],
     license_file="LICENSE",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
-    install_requires=[
-        "jupyter_server>=1.6,<2",
-        "swmclient"
-    ],
     zip_safe=False,
     include_package_data=True,
     python_requires=">=3.9, <4",
@@ -67,6 +60,7 @@ setup_args = dict(
         "Jupyter",
         "JupyterLab",
         "JupyterLab3",
+        "JupyterHub",
         "HPC",
         "High Performance Computing",
         "Cloud Computing",
@@ -76,6 +70,9 @@ setup_args = dict(
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "Intended Audience :: Science/Research",
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
@@ -93,6 +90,18 @@ setup_args = dict(
         "Source": "https://github.com/skyworkflows/swm-jupyter-term",
     },
 )
+
+
+# setuptools requirements
+if "setuptools" in sys.modules:
+    setup_args["install_requires"] = install_requires = []
+    with open("requirements.txt") as f:
+        for line in f.readlines():
+            req = line.strip()
+            if not req or req.startswith(("-e", "#")):
+                continue
+            install_requires.append(req)
+
 
 try:
     from jupyter_packaging import (
