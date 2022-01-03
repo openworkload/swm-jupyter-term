@@ -9,4 +9,5 @@ twine
 wheel
 
 jupyterhub
+jupyter-packaging
 swmclient

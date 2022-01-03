@@ -15,20 +15,21 @@ prepare-venv:
 .PHONY: format
 format:
 	. .venv/bin/activate
-	$(VENV_BIN)/autoflake -i -r --ignore-init-module-imports swm_jupyter_spawner
-	$(VENV_BIN)/black swm_jupyter_spawner
-	$(VENV_BIN)/isort swm_jupyter_spawner
+	$(VENV_BIN)/autoflake -i -r --ignore-init-module-imports swm_jupyter_ext swm_jupyter_spawner
+	$(VENV_BIN)/black swm_jupyter_ext swm_jupyter_spawner
+	$(VENV_BIN)/isort swm_jupyter_ext swm_jupyter_spawner
 
 .PHONY: check
 check:
 	. .venv/bin/activate
-	$(VENV_BIN)/flake8 swm_jupyter_spawner
-	$(VENV_BIN)/mypy swm_jupyter_spawner
+	$(VENV_BIN)/flake8 swm_jupyter_ext swm_jupyter_spawner
+	$(VENV_BIN)/mypy swm_jupyter_ext swm_jupyter_spawner
 
 .PHONY: package
 package:
 	. .venv/bin/activate
-	$(PYTHON) setup.py bdist_wheel
+	$(PYTHON) setup_extension.py bdist_wheel
+	$(PYTHON) setup_spawner.py bdist_wheel
 
 .PHONY: clean
 clean:
@@ -36,6 +37,7 @@ clean:
 
 .PHONY: upload
 upload:
+	. .venv/bin/activate
 	$(PYTHON) -m twine upload --verbose --config-file .pypirc dist/*
 
 .PHONY: test

@@ -4,10 +4,6 @@ node_modules/
 *.egg-info/
 .ipynb_checkpoints
 *.tsbuildinfo
-swm_jupyter_term/labextension
-
-# Created by https://www.gitignore.io/api/python
-# Edit at https://www.gitignore.io/?templates=python
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -106,7 +102,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# End of https://www.gitignore.io/api/python
-
 # OSX files
 .DS_Store
+
+# Jupyter related files
+swm_jupyter_term/labextension
+jupyterhub.sqlite
+jupyterhub_cookie_secret
