@@ -7,6 +7,7 @@ import os
 import sys
 
 from distutils.core import setup
+from setuptools import find_packages
 
 pjoin = os.path.join
 here = os.path.abspath(os.path.dirname(__file__))
@@ -18,8 +19,8 @@ with open(pjoin(here, 'version.py')) as f:
 
 
 def get_long_description():
-    here = path.abspath(path.dirname(__file__))
-    with open(path.join(here, "README.md"), encoding="utf-8") as f:
+    here = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
         long_description = f.read()
     return long_description
 
@@ -35,7 +36,7 @@ setup_args = dict(
     url="https://iclouds.net",
     license="BSD",
     platforms="Linux, Mac OS X, Windows",
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
     keywords=[
         "Interactive",
         "Interpreter",

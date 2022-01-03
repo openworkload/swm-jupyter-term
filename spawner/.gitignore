@@ -2,3 +2,7 @@
 *.egg-info
 __pycache__/
 .DS_Store
+
+jupyterhub.sqlite
+jupyterhub_cookie_secret
+

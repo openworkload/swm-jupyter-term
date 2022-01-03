@@ -12,7 +12,7 @@ for the frontend extension.
 ## Development environment
 
 ### Create
-conda create -n jupyterlab-ext --override-channels --strict-channel-priority -c conda-forge -c anaconda jupyterlab=3 cookiecutter nodejs jupyter-packaging git
+conda create -n jupyterlab-ext --override-channels --strict-channel-priority -c conda-forge -c anaconda jupyterhub jupyterlab=3 cookiecutter nodejs jupyter-packaging git
 conda init bash
 
 ## Activate
