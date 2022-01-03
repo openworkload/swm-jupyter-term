@@ -1,12 +1,12 @@
-# swm_jupyter_term
+# swm_jupyter_ext
 
 [![Github Actions Status](https://github.com/skyworkflows/swm-jupyter-term/workflows/Build/badge.svg)](https://github.com/skyworkflows/swm-jupyter-term/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/skyworkflows/swm-jupyter-term/main?urlpath=lab)
 
 A JupyterLab extension for Sky Port Terminal.
 
 
-This extension is composed of a Python package named `swm_jupyter_term`
-for the server extension and a NPM package named `swm-jupyter-term`
+This extension is composed of a Python package named `swm_jupyter_ext`
+for the server extension and a NPM package named `swm-jupyter-ext`
 for the frontend extension.
 
 ## Development environment
@@ -31,7 +31,7 @@ conda deactivate
 To install the extension, execute:
 
 ```bash
-pip install swmclient swm_jupyter_term
+pip install swmclient swm_jupyter_ext
 ```
 
 ## Uninstall
@@ -39,7 +39,7 @@ pip install swmclient swm_jupyter_term
 To remove the extension, execute:
 
 ```bash
-pip uninstall swmclient swm_jupyter_term
+pip uninstall swmclient swm_jupyter_ext
 ```
 
 
@@ -72,13 +72,13 @@ The `jlpm` command is JupyterLab's pinned version of
 
 ```bash
 # Clone the repo to your local environment
-# Change directory to the swm_jupyter_term directory
+# Change directory to the swm_jupyter_ext directory
 # Install package in development mode
 pip install -e .
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
 # Server extension must be manually installed in develop mode
-jupyter server extension enable swm_jupyter_term
+jupyter server extension enable swm_jupyter_ext
 # Rebuild extension Typescript source after making changes
 jlpm run build
 ```
@@ -104,13 +104,13 @@ jupyter lab build --minimize=False
 
 ```bash
 # Server extension must be manually disabled in develop mode
-jupyter server extension disable swm_jupyter_term
-pip uninstall swm_jupyter_term
+jupyter server extension disable swm_jupyter_ext
+pip uninstall swm_jupyter_ext
 ```
 
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
-folder is located. Then you can remove the symlink named `swm-jupyter-term` within that folder.
+folder is located. Then you can remove the symlink named `swm-jupyter-ext` within that folder.
 
 
 ### Before commit

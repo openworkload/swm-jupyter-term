@@ -16,7 +16,7 @@ def _jupyter_labextension_paths() -> list[typing.Dict[str, str]]:
 
 
 def _jupyter_server_extension_points() -> list[typing.Dict[str, str]]:
-    return [{"module": "swm_jupyter_term"}]
+    return [{"module": "swm_jupyter_ext"}]
 
 
 def _load_jupyter_server_extension(server_app: LabApp) -> None:
@@ -28,7 +28,7 @@ def _load_jupyter_server_extension(server_app: LabApp) -> None:
         JupyterLab application instance
     """
     setup_handlers(server_app.web_app)
-    server_app.log.info("Registered extension at URL path /swm-jupyter-term")
+    server_app.log.info("Registered extension at URL path /swm-jupyter-ext")
 
 
 # For backward compatibility with notebook server - useful for Binder/JupyterHub

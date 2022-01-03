@@ -1,7 +1,7 @@
 {
   "jupyter.lab.shortcuts": [],
-  "title": "swm-jupyter-term",
-  "description": "swm-jupyter-term settings.",
+  "title": "swm-jupyter-ext",
+  "description": "swm-jupyter-ext settings.",
   "type": "object",
   "properties": {},
   "additionalProperties": false

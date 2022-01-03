@@ -1,7 +1,7 @@
 {
   "NotebookApp": {
     "nbserver_extensions": {
-      "swm_jupyter_term": true
+      "swm_jupyter_ext": true
     }
   }
 }

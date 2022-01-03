@@ -1,5 +1,5 @@
 {
   "packageManager": "python",
-  "packageName": "swm_jupyter_term",
-  "uninstallInstructions": "Use your Python package manager (pip, conda, etc.) to uninstall the package swm_jupyter_term"
+  "packageName": "swm_jupyter_ext",
+  "uninstallInstructions": "Use your Python package manager (pip, conda, etc.) to uninstall the package swm_jupyter_ext"
 }

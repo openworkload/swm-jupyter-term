@@ -1,5 +1,5 @@
 """
-swm_jupyter_term setup
+swm_jupyter_ext setup
 """
 import json
 import sys
@@ -20,16 +20,16 @@ ensured_targets = [
     str(lab_path / "static/style.js")
 ]
 
-labext_name = "swm-jupyter-term"
+labext_name = "swm-jupyter-ext"
 
 data_files_spec = [
     ("share/jupyter/labextensions/%s" % labext_name, str(lab_path.relative_to(HERE)), "**"),
     ("share/jupyter/labextensions/%s" % labext_name, str("."), "install.json"),
     ("etc/jupyter/jupyter_server_config.d",
-     "jupyter-config/server-config", "swm_jupyter_term.json"),
+     "jupyter-config/server-config", "swm_jupyter_ext.json"),
     # For backward compatibility with notebook server
     ("etc/jupyter/jupyter_notebook_config.d",
-     "jupyter-config/nb-config", "swm_jupyter_term.json"),
+     "jupyter-config/nb-config", "swm_jupyter_ext.json"),
 ]
 
 long_description = (HERE / "README.md").read_text()

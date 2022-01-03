@@ -14,10 +14,10 @@ import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { requestAPI } from './handler';
 
 /**
- * Initialization data for the swm-jupyter-term extension.
+ * Initialization data for the swm-jupyter-ext extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'swm-jupyter-term:plugin',
+  id: 'swm-jupyter-ext:plugin',
   autoStart: true,
   optional: [ISettingRegistry, ICommandPalette, IMainMenu],
   activate: (
@@ -26,17 +26,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
     palette: ICommandPalette,
     mainMenu: IMainMenu
   ) => {
-    console.log('JupyterLab extension swm-jupyter-term is activated!');
+    console.log('JupyterLab extension swm-jupyter-ext is activated!');
 
     if (settingRegistry) {
       settingRegistry
         .load(plugin.id)
         .then(settings => {
-          console.log('swm-jupyter-term settings loaded: ', settings.composite);
+          console.log('swm-jupyter-ext settings loaded: ', settings.composite);
         })
         .catch(reason => {
           console.error(
-            'Failed to load settings for swm-jupyter-term.',
+            'Failed to load settings for swm-jupyter-ext.',
             reason
           );
         });
@@ -61,13 +61,13 @@ function add_config_config(
   app: JupyterFrontEnd
 ) {
   const category = 'Sky Port';
-  const command = 'swm-jupyter-term:main-menu-config';
+  const command = 'swm-jupyter-ext:main-menu-config';
   app.commands.addCommand(command, {
     label: 'Configure Spawner',
     caption: 'Configure Sky Port',
     execute: (args: any) => {
       create_main_area_widget(
-        'swm-jupyter-term:config',
+        'swm-jupyter-ext:config',
         'Sky Port Configuration',
         app
       );
@@ -78,7 +78,7 @@ function add_config_config(
     category,
     args: { origin: 'Configure Sky Port' }
   });
-  skyport_menu.addItem({ command, args: { origin: 'Sky Port' } });
+  skyport_menu.addItem({ command, args: { origin: 'SkyPort' } });
 }
 
 function add_config_jobs(
@@ -87,13 +87,13 @@ function add_config_jobs(
   app: JupyterFrontEnd
 ) {
   const category = 'Sky Port';
-  const command = 'swm-jupyter-term:main-menu-jobs';
+  const command = 'swm-jupyter-ext:main-menu-jobs';
   app.commands.addCommand(command, {
     label: 'Show Jobs',
     caption: 'Show Sky Port jobs of the current user',
     execute: (args: any) => {
       const widget = create_main_area_widget(
-        'swm-jupyter-term:jobs',
+        'swm-jupyter-ext:jobs',
         'Sky Port Jobs',
         app
       );
@@ -105,7 +105,7 @@ function add_config_jobs(
     category,
     args: { origin: 'Show Sky Port jobs' }
   });
-  skyport_menu.addItem({ command, args: { origin: 'Sky Port' } });
+  skyport_menu.addItem({ command, args: { origin: 'SkyPort' } });
 }
 
 function add_config_resources(
@@ -114,13 +114,13 @@ function add_config_resources(
   app: JupyterFrontEnd
 ) {
   const category = 'Sky Port';
-  const command = 'swm-jupyter-term:main-menu-res';
+  const command = 'swm-jupyter-ext:main-menu-res';
   app.commands.addCommand(command, {
     label: 'Show Resources',
     caption: 'Show Sky Port resources',
     execute: (args: any) => {
       create_main_area_widget(
-        'swm-jupyter-term:res',
+        'swm-jupyter-ext:res',
         'Sky Port Resources',
         app
       );
@@ -164,7 +164,7 @@ async function fetch_jobs(widget: MainAreaWidget) {
     })
     .catch(reason => {
       console.error(
-        `The swm_jupyter_term server extension appears to be missing.\n${reason}`
+        `The swm_jupyter_ext server extension appears to be missing.\n${reason}`
       );
     });
 
