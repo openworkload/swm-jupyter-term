@@ -21,7 +21,7 @@ def get_long_description():
 
 
 setup_args = dict(
-    name='swmjupyter',
+    name='swm_jupyter_spawner',
     version=VERSION['__version__'],
     description="""A spawner for Jupyterhub to spawn notebooks over Sky Port""",
     long_description=get_long_description(),

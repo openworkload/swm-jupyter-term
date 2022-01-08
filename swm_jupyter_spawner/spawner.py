@@ -1,17 +1,17 @@
 import io
-import platform
-import socket
 import time
+import typing
 
-from jinja2 import BaseLoader
-from jinja2 import Environment
 from jupyterhub.spawner import Spawner
 from swmclient.api import SwmApi
 from swmclient.generated.models.job_state import JobState
-from traitlets import Bool, Integer, Unicode, observe
+from swmclient.generated.types import File
+from traitlets import Integer, Unicode
+
+from .form import SwmForm
 
 
-class SwmSpawner(Spawner):
+class SwmSpawner(Spawner):  # type: ignore
 
     _jupyterhub_port = Integer(8081, help="JupyterHub port", config=True)
     _jupyterhub_host = Unicode("swm_server_host", help="JupyterHub hostname resolvable from container", config=True)
@@ -33,7 +33,7 @@ class SwmSpawner(Spawner):
             ca_file=self._swm_ca_file.format(username=username),
         )
 
-    def load_state(self, state):
+    def load_state(self, state: typing.Dict[str, typing.Any]) -> None:
         """Restore state about swm-spawned server after a hub restart."""
         super().load_state(state)
         if "job_id" in state:
@@ -43,7 +43,7 @@ class SwmSpawner(Spawner):
         if "remote_port" in state:
             self._remote_port = state["remote_port"]
 
-    def get_state(self):
+    def get_state(self) -> typing.Any:
         """Save state needed to restore this spawner instance after hub restore."""
         state = super().get_state()
         if self._job_id:
@@ -54,14 +54,14 @@ class SwmSpawner(Spawner):
             state["remote_port"] = self._remote_port
         return state
 
-    def clear_state(self):
+    def clear_state(self) -> None:
         """Clear stored state about this spawner."""
         super().clear_state()
         self._job_id = ""
         self._remote_ip = "127.0.0.1"
         self._remote_port = 8888
 
-    async def start(self):
+    async def start(self) -> typing.Optional[tuple[str, int]]:
         """Start single-user server over SWM."""
         self._job_id = await self._do_submit_rpc()
         self.log.debug(f"Starting User: {self.user.name}, job id: {self._job_id}")
@@ -72,7 +72,7 @@ class SwmSpawner(Spawner):
         await self._wait_job_start()
         return self._remote_ip, self._remote_port
 
-    async def poll(self):
+    async def poll(self) -> typing.Optional[int]:
         """Poll process to see if it is still running (None: not running, 0 otherwise)."""
         job_state = await self._fetch_job_state()
         if job_state in [JobState.R, JobState.W, JobState.T]:
@@ -80,12 +80,12 @@ class SwmSpawner(Spawner):
         self.clear_state()
         return 0
 
-    async def stop(self, now=False):
+    async def stop(self, now: bool = False) -> None:
         """Stop single-user server process for the current user."""
-        alive = await self._do_cancel_rpc()
+        await self._do_cancel_rpc()
         self.clear_state()
 
-    async def _fetch_job_state(self):
+    async def _fetch_job_state(self) -> typing.Optional[JobState]:
         """Perform RPC call to SWM to fetch the job state"""
         if self._job_id:
             job = self._swm_api.get_job(self._job_id)
@@ -93,9 +93,10 @@ class SwmSpawner(Spawner):
                 self.log.debug(f"Fetched job state: {job.state!s}")
                 return job.state
             else:
-                self.log.debug(f"Fetching job RPC did not return job")
+                self.log.debug("Fetching job RPC did not return job")
         else:
             self.log.debug("Can't cancel job: ID is unknown")
+        return None
 
     async def _do_submit_rpc(self) -> str:
         """Perform RPC to SWM in order to submit a new the singleuser job"""
@@ -130,7 +131,7 @@ class SwmSpawner(Spawner):
                 break
         return job_id
 
-    async def _do_cancel_rpc(self):
+    async def _do_cancel_rpc(self) -> None:
         """Perform RPC to SWM in order to cancel the singleuser job"""
         if self._job_id:
             output = self._swm_api.cancel_job(self._job_id)
@@ -138,7 +139,6 @@ class SwmSpawner(Spawner):
                 self.log.debug(f"Cancel RPC resulting line: {line.strip()}")
         else:
             self.log.debug("Can't cancel job: ID is unknown")
-
 
     async def _wait_job_start(self) -> None:
         if not self._job_id:
@@ -164,51 +164,8 @@ class SwmSpawner(Spawner):
                     self.log.debug(f"Job {self._job_id} is not started yet, state={job.state!s}")
                 time.sleep(10)
             else:
-                self.log.debug(f"Fetching job RPC did not return anything")
+                self.log.debug("Fetching job RPC did not return anything")
                 break
 
-
-    @observe("remote_host")
-    def _log_remote_host(self, change):
-        self.log.debug(f"Remote host was set to {self.remote_host}")
-
-    @observe("remote_ip")
-    def _log_remote_ip(self, change):
-        self.log.debug("Remote IP was set to {self.remote_ip}")
-
-    _remote_sites_form = Unicode(
-        """
-        <style>
-        #swm-remote-sites-list label p {
-            font-weight: normal;
-        }
-        </style>
-        <div class='form-group' id='swm-remote-sites-list'>
-        {% for remote_site in remote_site_list %}
-        <label for='remote-site-item-{{ remote_site.name }}' class='form-control input-group'>
-            <div class='col-md-1'>
-                <input type='radio' name='remote_site' id='remote-site-item-{{ remote_site.name }}' value='{{ remote_site.name }}'/>
-            </div>
-            <div class='col-md-11'>
-                <strong>{{ remote_site.server }}</strong>
-                <p>{{ remote_site.kind }}</p>
-            </div>
-        </label>
-        {% endfor %}
-        </div>
-        """,
-        config=True,
-        help="""
-        Jinja2 template for constructing remote sites list shown to user.
-        Used when `remote_site_list` is set.
-        The contents of `remote_site_list` are passed in to the template.
-        This should be used to construct the contents of a HTML form. When
-        posted, this form is expected to have an item with name `remote_site` and
-        the value the index of the remote_site in `remote_site_list`.
-        """,
-    )
-
-    def render_options_form(self):
-        remote_sites_form = Environment(loader=BaseLoader).from_string(self._remote_sites_form)
-        remote_sites = self._swm_api.get_remote_sites()
-        return remote_sites_form.render(remote_site_list=remote_sites)
+    def render_options_form(self) -> str:
+        return SwmForm().render(self._swm_api)

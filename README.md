@@ -8,7 +8,7 @@ Sky Port is an universal bus between user software and compute resources. It can
 # Sky Port integration
 
 The current project represents a custom spawner that allows to configure spawning options and submit jupyterlab job over Sky Port.
-The spawner python package is distributed vis PyPI as `swmjupyter`.
+The spawner python package is distributed vis PyPI as `swm-jupyter-spawner`.
 
 ## Development environment for the spawner
 
