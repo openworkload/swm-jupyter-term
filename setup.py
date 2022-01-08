@@ -4,13 +4,13 @@ import os
 import sys
 
 from distutils.core import setup
+from pathlib import Path
 from setuptools import find_packages
 
 HERE = Path(__file__).parent.resolve()
 
-# Get the current package version
-version = {}
-with open(pjoin(HERE, 'version.py')) as f:
+VERSION = {}
+with open(os.path.join(HERE, 'version.py')) as f:
     exec(f.read(), {}, VERSION)
 
 
