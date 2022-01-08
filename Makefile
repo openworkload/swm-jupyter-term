@@ -15,15 +15,15 @@ prepare-venv:
 .PHONY: format
 format:
 	. .venv/bin/activate
-	$(VENV_BIN)/autoflake -i -r --ignore-init-module-imports swm_jupyter_ext swm_jupyter_spawner
-	$(VENV_BIN)/black swm_jupyter_ext swm_jupyter_spawner
-	$(VENV_BIN)/isort swm_jupyter_ext swm_jupyter_spawner
+	$(VENV_BIN)/autoflake -i -r --ignore-init-module-imports swm_jupyter_spawner
+	$(VENV_BIN)/black swm_jupyter_spawner
+	$(VENV_BIN)/isort swm_jupyter_spawner
 
 .PHONY: check
 check:
 	. .venv/bin/activate
-	$(VENV_BIN)/flake8 swm_jupyter_ext swm_jupyter_spawner
-	$(VENV_BIN)/mypy swm_jupyter_ext swm_jupyter_spawner
+	$(VENV_BIN)/flake8 swm_jupyter_spawner
+	$(VENV_BIN)/mypy swm_jupyter_spawner
 
 .PHONY: package
 package:

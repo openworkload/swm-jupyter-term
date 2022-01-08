@@ -1,6 +1,0 @@
-node_modules
-**/node_modules
-**/lib
-**/package.json
-swm_jupyter_ext
-swm_jupyter_spawner
