@@ -48,8 +48,12 @@ class SwmForm:
         remote_sites = swm_api.get_remote_sites()
         flavors = swm_api.get_flavors()
         for flavor in flavors:
-            remote = next(remote_site for remote_site in remote_sites if flavor.remote_id == remote_site.id)
-            instance_type = InstanceType(remote.name, flavor.name, flavor.price, flavor.resources)
+            if flavor.remote_id:
+                remote = next(remote_site for remote_site in remote_sites if flavor.remote_id == remote_site.id)
+                remote_name = remote.name
+            else:
+                remote_name = "-"
+            instance_type = InstanceType(remote_name, flavor.name, flavor.price, flavor.resources)
             instance_types.append(instance_type)
         return instance_types
 
