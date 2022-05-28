@@ -28,7 +28,7 @@ setup_args = dict(
     long_description_content_type="text/markdown",
     author="Taras Shapovalov",
     author_email="taras@iclouds.net",
-    url="https://iclouds.net",
+    url="https://github.com/openworkload/swm-jupyter-term",
     license="BSD",
     platforms="Linux, Mac OS X, Windows",
     packages=find_packages(),
@@ -36,9 +36,8 @@ setup_args = dict(
         "HPC",
         "High Performance Computing",
         "Cloud Computing",
-        "SWM",
         "Sky Port",
-        "Sky Workload Manager"
+        "Open Workload"
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -58,8 +57,8 @@ setup_args = dict(
         "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
     ],
     project_urls={
-        "Bug Reports": "https://github.com/skyworkflows/swm-jupyter-term/issues",
-        "Source": "https://github.com/skyworkflows/swm-jupyter-term",
+        "Bug Reports": "https://github.com/openworkload/swm-jupyter-term/issues",
+        "Source": "https://github.com/openworkload/swm-jupyter-term",
     },
 )
 
