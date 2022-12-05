@@ -12,22 +12,26 @@ The spawner python package is distributed vis PyPI as `swm-jupyter-spawner`.
 
 ## Development environment for the spawner
 
-Ensure `conda` is installed and accessable via $PATH.
+Ensure `conda` and `pip` are installed and accessable via $PATH.
 
-### Create
+### 1. Create conda environment
 ```bash
 conda create -n swm-jupyter --override-channels --strict-channel-priority -c conda-forge -c anaconda nodejs configurable-http-proxy
 conda init bash
 ```
-
-## Activate
+Activate conda:
 ```bash
 conda activate swm-jupyter
 ```
 
-## Deactivate
+Deactivate conda:
 ```bash
 conda deactivate
+```
+
+## 2. Configure virtualenv
+```bash
+make prepare-venv
 ```
 
 # JupyterHub spawner
