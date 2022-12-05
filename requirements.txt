@@ -143,10 +143,10 @@ rfc3986[idna2008]==1.5.0
     # via
     #   httpx
     #   twine
-ruamel.yaml==0.17.20
+ruamel-yaml==0.17.20
     # via jupyter-telemetry
-ruamel.yaml.clib==0.2.6
-    # via ruamel.yaml
+ruamel-yaml-clib==0.2.6
+    # via ruamel-yaml
 secretstorage==3.3.1
     # via keyring
 six==1.16.0
@@ -163,7 +163,7 @@ sqlalchemy==1.4.29
     # via
     #   alembic
     #   jupyterhub
-swmclient==0.1.2
+swmclient==0.1.3
     # via -r requirements.in
 tomli==1.2.3
     # via

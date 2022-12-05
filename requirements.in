@@ -11,4 +11,4 @@ wheel
 jinja2
 
 jupyterhub
-swmclient
+swmclient >= 0.1.3
