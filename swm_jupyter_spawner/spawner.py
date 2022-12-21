@@ -127,17 +127,19 @@ class SwmSpawner(Spawner):  # type: ignore
         bash_script_str += f"jupyterhub-singleuser --debug --ip='0.0.0.0' --hub-api-url='{hub_url}'\n"
         self.log.info(f"SWM job script: \n{bash_script_str}")
 
+        job_id: str = ""
         job_script_bytes = bytes(bash_script_str, "utf-8")
         io_bytes = io.BytesIO(job_script_bytes)
-        io_obj: File = self._swm_api.submit_job(io_bytes)
-        job_id: str = ""
-        while True:
-            if line := io_obj.payload.readline():
-                if not job_id:
-                    job_id = line.decode("utf-8").strip()
-                self.log.debug(f"Job sumbission RPC resulting line: {line}")
-            else:
-                break
+        if io_obj := self._swm_api.submit_job(io_bytes):
+            while True:
+                if line := io_obj.payload.readline():
+                    if not job_id:
+                        job_id = line.decode("utf-8").strip()
+                    self.log.debug(f"Job sumbission RPC resulting line: {line}")
+                else:
+                    break
+        else:
+            self.log.error("Can't submit a job: no job ID is returned")
         return job_id
 
     async def _do_cancel_rpc(self) -> None:
