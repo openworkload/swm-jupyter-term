@@ -12,10 +12,11 @@ The spawner python package is distributed vis PyPI as `swm-jupyter-spawner`.
 
 ## Development environment for the spawner
 
-Ensure `conda` and `pip` are installed and accessable via $PATH.
+Ensure `conda` and `pip` are installed and accessable via $PATH (installed in the dev container image by default).
 
 ### 1. Create conda environment
 ```bash
+# Run the dev container from swm-core first, then switch to swm-jupyter-term directory
 conda create -n swm-jupyter --override-channels --strict-channel-priority -c conda-forge -c anaconda nodejs configurable-http-proxy
 conda init bash
 ```
