@@ -30,6 +30,11 @@ Deactivate conda:
 conda deactivate
 ```
 
+For local testing:
+```bash
+docker pull jupyter/datascience-notebook:hub-3.0.0
+```
+
 ## 2. Configure virtualenv
 ```bash
 make prepare-venv

@@ -107,24 +107,30 @@ class SwmSpawner(Spawner):  # type: ignore
 
     async def _do_submit_rpc(self) -> str:
         """Perform RPC to SWM in order to submit a new the singleuser job"""
-        hub_url = f"http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api"
         env = self.get_env()
+        hub_url = f"http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api"
+        server_port = '8888'
+        image_tag = 'hub-3.0.0'
         bash_script_str = "#!/bin/bash\n"
         bash_script_str += f"#SWM flavor {self.user_options['flavor']}\n"
+        bash_script_str += f"#SWM ports {server_port}/tcp\n"
         bash_script_str += "#SWM relocatable\n"
-        bash_script_str += "#SWM image jupyter/datascience-notebook\n"
-        bash_script_str += "#SWM ports 8888/tcp\n"
+        bash_script_str += f"#SWM image jupyter/datascience-notebook:{image_tag}\n"
         bash_script_str += "\n"
         bash_script_str += "export HOME=/home/$USER\n"
         bash_script_str += "export XDG_CACHE_HOME=/home/$USER/.cache/\n"
         bash_script_str += "cd $HOME\n"
         bash_script_str += f"export JUPYTERHUB_API_TOKEN={env['JUPYTERHUB_API_TOKEN']}\n"
         bash_script_str += f"export JUPYTERHUB_CLIENT_ID={env['JUPYTERHUB_CLIENT_ID']}\n"
+        bash_script_str += f"export JUPYTERHUB_API_URL={hub_url}\n"
         bash_script_str += "export JUPYTER_RUNTIME_DIR=/tmp\n"
         bash_script_str += "export JUPYTERHUB_USER=$USER\n"
         bash_script_str += "export JUPYTERHUB_SERVICE_PREFIX=/user/$USER\n"
+        bash_script_str += "export JUPYTERHUB_SERVICE_URL=http://0.0.0.0:{server_port}\n"
         bash_script_str += "env\n"
-        bash_script_str += f"jupyterhub-singleuser --debug --ip='0.0.0.0' --hub-api-url='{hub_url}'\n"
+        bash_script_str += "echo\n"
+        bash_script_str += "echo Start single user jupyter server ...\n"
+        bash_script_str += f"jupyterhub-singleuser --debug\n"
         self.log.info(f"SWM job script: \n{bash_script_str}")
 
         job_id: str = ""
