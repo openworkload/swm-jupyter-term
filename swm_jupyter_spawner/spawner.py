@@ -110,12 +110,14 @@ class SwmSpawner(Spawner):  # type: ignore
         env = self.get_env()
         hub_url = f"http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api"
         server_port = '8888'
-        image_tag = 'hub-3.0.0'
+        container_image_tag = 'hub-3.0.0'
+        cloud_image_name = 'ubuntu-22.04'
         bash_script_str = "#!/bin/bash\n"
         bash_script_str += f"#SWM flavor {self.user_options['flavor']}\n"
         bash_script_str += f"#SWM ports {server_port}/tcp\n"
         bash_script_str += "#SWM relocatable\n"
-        bash_script_str += f"#SWM image jupyter/datascience-notebook:{image_tag}\n"
+        bash_script_str += f"#SWM cloud-image {cloud_image_name}\n"
+        bash_script_str += f"#SWM container-image jupyter/datascience-notebook:{container_image_tag}\n"
         bash_script_str += "\n"
         bash_script_str += "export HOME=/home/$USER\n"
         bash_script_str += "export XDG_CACHE_HOME=/home/$USER/.cache/\n"
