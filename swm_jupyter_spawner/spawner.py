@@ -116,6 +116,7 @@ class SwmSpawner(Spawner):  # type: ignore
         bash_script_str += f"#SWM flavor {self.user_options['flavor']}\n"
         bash_script_str += f"#SWM ports {server_port}/tcp\n"
         bash_script_str += "#SWM relocatable\n"
+        bash_script_str += "#SWM account openstack\n"
         bash_script_str += f"#SWM cloud-image {cloud_image_name}\n"
         bash_script_str += f"#SWM container-image jupyter/datascience-notebook:{container_image_tag}\n"
         bash_script_str += "\n"
