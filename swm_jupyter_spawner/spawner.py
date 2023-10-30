@@ -110,7 +110,7 @@ class SwmSpawner(Spawner):  # type: ignore
         env = self.get_env()
         hub_url = f"http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api"
         server_port = '8888'
-        container_image_tag = 'hub-3.0.0'
+        container_image_tag = 'hub-3.1.1'
         cloud_image_name = 'ubuntu-22.04'
         bash_script_str = "#!/bin/bash\n"
         bash_script_str += f"#SWM flavor {self.user_options['flavor']}\n"
@@ -129,7 +129,7 @@ class SwmSpawner(Spawner):  # type: ignore
         bash_script_str += "export JUPYTER_RUNTIME_DIR=/tmp\n"
         bash_script_str += "export JUPYTERHUB_USER=$USER\n"
         bash_script_str += "export JUPYTERHUB_SERVICE_PREFIX=/user/$USER\n"
-        bash_script_str += "export JUPYTERHUB_SERVICE_URL=http://0.0.0.0:{server_port}\n"
+        bash_script_str += f"export JUPYTERHUB_SERVICE_URL=http://0.0.0.0:{server_port}\n"
         bash_script_str += "env\n"
         bash_script_str += "echo\n"
         bash_script_str += "echo Start single user jupyter server ...\n"

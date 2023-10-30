@@ -32,7 +32,7 @@ conda deactivate
 
 For local testing:
 ```bash
-docker pull jupyter/datascience-notebook:hub-3.0.0
+docker pull jupyter/datascience-notebook:hub-3.1.1
 ```
 
 ## 2. Configure virtualenv
