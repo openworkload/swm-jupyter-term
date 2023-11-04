@@ -15,7 +15,7 @@ from .form import SwmForm
 class SwmSpawner(Spawner):  # type: ignore
 
     _jupyterhub_port = Integer(8081, help="JupyterHub port", config=True)
-    _jupyterhub_host = Unicode("swm_server_host", help="JupyterHub hostname resolvable from container", config=True)
+    _jupyterhub_host = Unicode("localhost", help="JupyterHub hostname resolvable from container", config=True)
     _jupyter_singleuser_port = Integer(8888, help="jupyter server port", config=True)
 
     _swm_port = Integer(8443, help="swm-core user API port", config=True)
@@ -114,7 +114,8 @@ class SwmSpawner(Spawner):  # type: ignore
         cloud_image_name = 'ubuntu-22.04'
         bash_script_str = "#!/bin/bash\n"
         bash_script_str += f"#SWM flavor {self.user_options['flavor']}\n"
-        bash_script_str += f"#SWM ports {server_port}/tcp\n"
+        #bash_script_str += f"#SWM ports {server_port}/tcp\n"
+        bash_script_str += f"#SWM ports {server_port}/tcp/in,{self._jupyterhub_port}/tcp/out\n"
         bash_script_str += "#SWM relocatable\n"
         bash_script_str += "#SWM account openstack\n"
         bash_script_str += f"#SWM cloud-image {cloud_image_name}\n"
@@ -133,7 +134,9 @@ class SwmSpawner(Spawner):  # type: ignore
         bash_script_str += "env\n"
         bash_script_str += "echo\n"
         bash_script_str += "echo Start single user jupyter server ...\n"
-        bash_script_str += f"jupyterhub-singleuser --debug\n"
+        bash_script_str += "jupyterhub-singleuser --debug || true\n"
+        bash_script_str += "echo Sleep for validation ...\n"
+        bash_script_str += "sleep 3600\n"
         self.log.info(f"SWM job script: \n{bash_script_str}")
 
         job_id: str = ""
