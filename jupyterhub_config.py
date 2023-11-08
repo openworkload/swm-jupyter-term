@@ -15,5 +15,3 @@ c.JupyterHub.authenticator_class = 'jupyterhub.auth.DummyAuthenticator'
 c.SwmSpawner._swm_ca_file = '~/.swm/spool/secure/cluster/ca-chain-cert.pem'
 c.SwmSpawner._swm_key_file = '~/.swm/key.pem'
 c.SwmSpawner._swm_cert_file = '~/.swm/cert.pem'
-
-c.ConfigurableHTTPProxy.debug = True
