@@ -1,0 +1,70 @@
+<style>
+#swm-settings label p {
+    font-weight: normal;
+}
+</style>
+
+
+<div class='form-group' id='swm-settings' style="background-color:#f0f5f5; padding: 10px;">
+
+    <p>
+        <label for="files">Select notebooks local directory: </label>
+        <br>
+        <input type="file" accept=".ipynb" id="files" name="files[]" multiple style="display: none;"/>
+        <input type="button" value="Browse..." onclick="document.getElementById('files').click();" />
+        <div style="margin:20px">
+            <pre id="filelist" style="display:none; background-color:#FAFFFB"></pre>
+        </div>
+    </p>
+    <script>
+        document.getElementById('files').addEventListener('change', function(e) {
+          var list = document.getElementById('filelist');
+          list.innerHTML = '';
+          for (var i = 0; i < this.files.length; i++) {
+              var reader = new FileReader();
+              reader.readAsBinaryString(this.files[i]);
+              reader.addEventListener("load", e => {
+                form_html = document.getElementById('spawn_form');
+                const notebook_file_content = document.createElement("input");
+                notebook_file_content.type = "hidden";
+                notebook_file_content.name = "input_files_data[]";
+                notebook_file_content.id = "input_files_data[]";
+                notebook_file_content.value = e.target.result;
+              });
+              list.innerHTML += (i + 1) + '. ' + this.files[i].name + '\n';
+          }
+          if (list.innerHTML == '') {
+              list.style.display = 'none';
+          } else {
+              list.innerHTML = "<p>These files will be uploaded:</p>" + list.innerHTML
+              list.style.display = 'block';
+          }
+        });
+    </script>
+
+    <p>
+        <label for="files">Select instance type:</label>
+    </p>
+
+    <div style="margin-left: 10px">
+    {% for provider_name, provider in providers.items() %}
+        <label>{{ provider_name.capitalize() }}</label>
+        <div style="margin-left: 10px">
+        {% for it in provider.instance_types %}
+            <label for='it-item-{{ it.flavor_name }}' class='form-control input-group' style="background-color:#FAFFFB">
+                <div class='col-md-1'>
+                    <input type='radio' name='it' id='it-item-{{ it.flavor_name }}' value='{{ it.flavor_name }}'/>
+                </div>
+                <div class='col-md-14'>
+                    <strong>{{ it.flavor_name }}: ${{ it.price }}, {{ it.remote_name }}, </strong>
+                    {% for res in it.resources %}
+                        {{ res.name }}={{ res.count }}
+                    {% endfor %}
+                </div>
+            </label>
+        {% endfor %}
+        </div>
+    {% endfor %}
+    </div>
+
+</div>

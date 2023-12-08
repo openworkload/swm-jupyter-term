@@ -1,8 +1,11 @@
 import io
+import os
 import time
 import typing
 import platform
+from tempfile import TemporaryDirectory
 
+from jinja2 import Template
 from jupyterhub.spawner import Spawner
 from swmclient.api import SwmApi
 from swmclient.generated.models.job_state import JobState
@@ -25,10 +28,32 @@ class SwmSpawner(Spawner):  # type: ignore
     _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)
     _swm_job_id = None
 
+    _spool_dir = TemporaryDirectory(prefix=f".swm_jupyter_spawner_")
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._html_form = SwmForm(self.log)
         self.options_form = self.render_options_form()
+
+    def _render_job_script(self) -> str:
+        env = self.get_env()
+        job_info: dict[str, str|int] = {
+            'account': 'openstack',
+            'container_image_name': 'jupyter/datascience-notebook',
+            'server_port': self._jupyter_singleuser_port,
+            'container_image_tag': 'hub-3.1.1',
+            'cloud_image_name': 'ubuntu-22.04',
+            'flavor': self.user_options['flavor'],
+            'ports': f'{self._jupyter_singleuser_port}/tcp/in,{self._jupyterhub_port}/tcp/out',
+            'jupyterhub_api_token': env['JUPYTERHUB_API_TOKEN'],
+            'jupyterhub_client_id': env['JUPYTERHUB_CLIENT_ID'],
+            'hub_url': f'http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api'
+        }
+        with open(os.path.dirname(__file__) + '/job.sh.jinja') as _file:
+            job_script = Template(_file.read())
+        job_script = job_script.render(job_info=job_info)
+        self.log.info(f"Job script to submit: \n{job_script}")
+        return job_script
 
     @property
     def _swm_api(self) -> SwmApi:
@@ -106,39 +131,10 @@ class SwmSpawner(Spawner):  # type: ignore
         return None
 
     async def _do_submit_rpc(self) -> str:
-        """Perform RPC to SWM in order to submit a new the singleuser job"""
-        env = self.get_env()
-        hub_url = f"http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api"
-        server_port = '8888'
-        container_image_tag = 'hub-3.1.1'
-        cloud_image_name = 'ubuntu-22.04'
-        bash_script_str = "#!/bin/bash\n"
-        bash_script_str += f"#SWM flavor {self.user_options['flavor']}\n"
-        bash_script_str += f"#SWM ports {server_port}/tcp/in,{self._jupyterhub_port}/tcp/out\n"
-        bash_script_str += "#SWM relocatable\n"
-        bash_script_str += "#SWM account openstack\n"
-        bash_script_str += f"#SWM cloud-image {cloud_image_name}\n"
-        bash_script_str += f"#SWM container-image jupyter/datascience-notebook:{container_image_tag}\n"
-        bash_script_str += "\n"
-        bash_script_str += "export HOME=$(pwd)\n"
-        bash_script_str += "export XDG_CACHE_HOME=${HOME}/.cache/\n"
-        bash_script_str += f"export JUPYTERHUB_API_TOKEN={env['JUPYTERHUB_API_TOKEN']}\n"
-        bash_script_str += f"export JUPYTERHUB_CLIENT_ID={env['JUPYTERHUB_CLIENT_ID']}\n"
-        bash_script_str += f"export JUPYTERHUB_API_URL={hub_url}\n"
-        bash_script_str += "export JUPYTER_RUNTIME_DIR=/tmp\n"
-        bash_script_str += "export JUPYTERHUB_USER=$USER\n"
-        bash_script_str += "export JUPYTERHUB_SERVICE_PREFIX=/user/$USER\n"
-        bash_script_str += f"export JUPYTERHUB_SERVICE_URL=http://0.0.0.0:{server_port}\n"
-        bash_script_str += "env\n"
-        bash_script_str += "echo\n"
-        bash_script_str += "echo Start single user jupyter server ...\n"
-        bash_script_str += "jupyterhub-singleuser --debug || true\n"
-        bash_script_str += "echo Sleep for validation ...\n"
-        bash_script_str += "sleep 3600\n"
-        self.log.info(f"SWM job script: \n{bash_script_str}")
-
+        """Perform RPC to SWM in order to submit a new singleuser job"""
+        job_script = self._render_job_script()
         job_id: str = ""
-        job_script_bytes = bytes(bash_script_str, "utf-8")
+        job_script_bytes = bytes(job_script, "utf-8")
         io_bytes = io.BytesIO(job_script_bytes)
         if io_obj := self._swm_api.submit_job(io_bytes):
             while True:
@@ -192,4 +188,4 @@ class SwmSpawner(Spawner):  # type: ignore
         return self._html_form.render(self._swm_api)
 
     def options_from_form(self, form_data: typing.Dict[str, list[str]]) -> typing.Dict[str, typing.Any]:
-        return self._html_form.get_options(form_data)
+        return self._html_form.get_options(form_data, self._spool_dir.name)
