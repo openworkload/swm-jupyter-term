@@ -47,7 +47,8 @@ class SwmSpawner(Spawner):  # type: ignore
             'ports': f'{self._jupyter_singleuser_port}/tcp/in,{self._jupyterhub_port}/tcp/out',
             'jupyterhub_api_token': env['JUPYTERHUB_API_TOKEN'],
             'jupyterhub_client_id': env['JUPYTERHUB_CLIENT_ID'],
-            'hub_url': f'http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api'
+            'hub_url': f'http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api',
+            'input_files': self.user_options['input_files'],
         }
         with open(os.path.dirname(__file__) + '/job.sh.jinja') as _file:
             job_script = Template(_file.read())
