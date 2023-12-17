@@ -47,6 +47,7 @@ class SwmForm:
     def get_options(self, form_data: typing.Dict[str, list[str]], spool_dir: str) -> typing.Dict[str, typing.Any]:
         options: typing.Dict[str, typing.Any] = {}
         options['input_files'] = self._save_tmp_input_files(form_data.get('files[]_file', []), spool_dir)
+        options['output_files'] = [os.path.basename(file_path) for file_path in options['input_files']]
         options['flavor'] = form_data['it'][0]
         self.log.debug(f"Parsed options: {options}")
         return options

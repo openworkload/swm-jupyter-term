@@ -49,6 +49,7 @@ class SwmSpawner(Spawner):  # type: ignore
             'jupyterhub_client_id': env['JUPYTERHUB_CLIENT_ID'],
             'hub_url': f'http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api',
             'input_files': self.user_options['input_files'],
+            'output_files': self.user_options['output_files'],
         }
         with open(os.path.dirname(__file__) + '/job.sh.jinja') as _file:
             job_script = Template(_file.read())
