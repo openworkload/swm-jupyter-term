@@ -39,6 +39,7 @@ class SwmSpawner(Spawner):  # type: ignore
         env = self.get_env()
         job_info: dict[str, str|int] = {
             'account': 'openstack',
+            'container_registry': '172.28.128.2:6006',
             'container_image_name': 'jupyter/datascience-notebook',
             'server_port': self._jupyter_singleuser_port,
             'container_image_tag': 'hub-3.1.1',

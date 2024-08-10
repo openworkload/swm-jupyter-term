@@ -8,7 +8,7 @@
 #SWM ports {{ job_info["ports"] }}
 #SWM account {{ job_info["account"] }}
 #SWM cloud-image {{ job_info["cloud_image_name"] }}
-#SWM container-image {{ job_info["container_image_name"] }}:{{ job_info["container_image_tag"] }}
+#SWM container-image {{ job_info["container_registry"] }}/{{ job_info["container_image_name"] }}:{{ job_info["container_image_tag"] }}
 #SWM input-files {{ " ".join(job_info["input_files"]) }}
 #SWM output-files {{ " ".join(job_info["output_files"]) }}
 
