@@ -17,6 +17,8 @@ from .form import SwmForm
 
 class SwmSpawner(Spawner):  # type: ignore
 
+    _config_file = Unicode(os.path.expanduser("~/.swm/jupyter-spawner.conf"), help="Gate config file", config=True)
+
     _jupyterhub_port = Integer(8081, help="JupyterHub port", config=True)
     _jupyterhub_host = Unicode("localhost", help="JupyterHub hostname resolvable from container", config=True)
     _jupyter_singleuser_port = Integer(8888, help="jupyter server port", config=True)
@@ -32,23 +34,45 @@ class SwmSpawner(Spawner):  # type: ignore
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self._config = self._read_config()
         self._html_form = SwmForm(self.log)
         self.options_form = self.render_options_form()
 
+    def _read_config(self) -> dict[str, str]:
+        config: dict[str, str] = {}
+        with open(self._config_file, 'r') as file:
+            for line in file:
+                if not line:
+                    continue
+                stripped_line = line.strip()
+                if stripped_line.startswith("#"):
+                    continue
+                if "=" not in line:
+                    continue
+                parts = stripped_line.split('=', 1)
+                if len(parts) != 2:
+                    continue
+                config[parts[0].strip().lower()] = parts[1].strip()
+        self.log.info(f"Configuration from {self._config_file}: {config}")
+        return config
+
     def _render_job_script(self) -> str:
         env = self.get_env()
+        jupyterhub_port = self._conf.get('jupyterhub_port', self._jupyterhub_port)
+        jupyterhub_host = self._conf.get('jupyterhub_host', self._jupyterhub_host)
+        jupyter_singleuser_port = self._conf.get('jupyter_singleuser_port', self._jupyter_singleuser_port)
         job_info: dict[str, str|int] = {
-            'account': 'openstack',
-            'container_registry': '172.28.128.2:6006',
-            'container_image_name': 'jupyter/datascience-notebook',
-            'server_port': self._jupyter_singleuser_port,
-            'container_image_tag': 'hub-3.1.1',
-            'cloud_image_name': 'ubuntu-22.04',
+            'account': self._config.get('account', 'openstack'),
+            'container_registry': self._config.get('container_registry', '172.28.128.2:6006'),
+            'container_image_name': self._config.get('container_image_image', 'jupyter/datascience-notebook'),
+            'server_port': jupyter_singleuser_port,
+            'container_image_tag': self._config.get('container_image_tag', 'hub-3.1.1'),
+            'cloud_image_name': self._config.get('cloud_image_name', 'ubuntu-22.04'),
             'flavor': self.user_options['flavor'],
-            'ports': f'{self._jupyter_singleuser_port}/tcp/in,{self._jupyterhub_port}/tcp/out',
+            'ports': f'{jupyter_singleuser_port}/tcp/in,{jupyterhub_port}/tcp/out',
             'jupyterhub_api_token': env['JUPYTERHUB_API_TOKEN'],
             'jupyterhub_client_id': env['JUPYTERHUB_CLIENT_ID'],
-            'hub_url': f'http://{self._jupyterhub_host}:{self._jupyterhub_port}/hub/api',
+            'hub_url': f'http://{jupyterhub_host}:{jupyterhub_port}/hub/api',
             'input_files': self.user_options['input_files'],
             'output_files': self.user_options['output_files'],
         }
