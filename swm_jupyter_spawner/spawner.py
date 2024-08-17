@@ -58,9 +58,9 @@ class SwmSpawner(Spawner):  # type: ignore
 
     def _render_job_script(self) -> str:
         env = self.get_env()
-        jupyterhub_port = self._conf.get('jupyterhub_port', self._jupyterhub_port)
-        jupyterhub_host = self._conf.get('jupyterhub_host', self._jupyterhub_host)
-        jupyter_singleuser_port = self._conf.get('jupyter_singleuser_port', self._jupyter_singleuser_port)
+        jupyterhub_port = self._config.get('jupyterhub_port', self._jupyterhub_port)
+        jupyterhub_host = self._config.get('jupyterhub_host', self._jupyterhub_host)
+        jupyter_singleuser_port = self._config.get('jupyter_singleuser_port', self._jupyter_singleuser_port)
         job_info: dict[str, str|int] = {
             'account': self._config.get('account', 'openstack'),
             'container_registry': self._config.get('container_registry', '172.28.128.2:6006'),
