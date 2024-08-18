@@ -206,7 +206,7 @@ class SwmSpawner(Spawner):  # type: ignore
                     break
                 elif job.state in [JobState.Q, JobState.W, JobState.T]:
                     self.log.debug(f"Job {self._swm_job_id} is not started yet, state={job.state!s}")
-                time.sleep(10)
+                time.sleep(15)
             else:
                 self.log.warning("Fetching job RPC did not return anything")
                 break
