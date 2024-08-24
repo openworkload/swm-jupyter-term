@@ -1,7 +1,7 @@
+import os
+import typing
 from dataclasses import dataclass
 from logging import Logger
-import typing
-import os
 
 from jinja2 import Template
 from swmclient.api import SwmApi
@@ -13,6 +13,7 @@ class InstanceType:
     flavor_name: str
     price: float
     resources: list[Resource]
+
 
 @dataclass
 class Provider:
@@ -39,27 +40,28 @@ class SwmForm:
         return providers
 
     def render(self, swm_api: SwmApi) -> str:
-        with open(os.path.dirname(__file__) + '/form.html.jinja') as _file:
+        with open(os.path.dirname(__file__) + "/form.html.jinja") as _file:
             html_form = Template(_file.read())
         providers = self._get_providers(swm_api)
         return html_form.render(providers=providers)
 
-    def get_options(self, form_data: typing.Dict[str, list[str]], spool_dir: str) -> typing.Dict[str, typing.Any]:
-        options: typing.Dict[str, typing.Any] = {}
-        options['input_files'] = self._save_tmp_input_files(form_data.get('files[]_file', []), spool_dir)
-        options['output_files'] = [os.path.basename(file_path) for file_path in options['input_files']]
-        options['flavor'] = form_data['it'][0]
+    def get_options(self, form_data: dict[str, list[dict[str, bytes | str]]], spool_dir: str) -> dict[str, typing.Any]:
+        options: dict[str, typing.Any] = {}
+        input_files: list[dict[str, bytes | str]] = form_data.get("files[]_file", [])
+        options["input_files"] = self._save_tmp_input_files(input_files, spool_dir)
+        options["output_files"] = [os.path.basename(file_path) for file_path in options["input_files"]]
+        options["flavor"] = form_data["it"][0]
         self.log.debug(f"Parsed options: {options}")
         return options
 
-    def _save_tmp_input_files(self, form_files: list[dict[str, bytes|str]], spool_dir:str) -> list[str]:
+    def _save_tmp_input_files(self, form_files: list[dict[str, bytes | str]], spool_dir: str) -> list[str]:
         result: list[str] = []
         if form_files:
             for file_info in form_files:
-                filename = file_info['filename']
-                content = file_info['body']
-                file_path = spool_dir + "/" + filename
+                filename = file_info["filename"]
+                content = file_info["body"]
+                file_path: str = spool_dir + "/" + str(filename)
                 self.log.debug(f"Save input temporary file: {file_path}, {len(content)}")
-                open(file_path, 'wb').write(content)
+                open(file_path, "wb").write(content)
                 result.append(file_path)
         return result

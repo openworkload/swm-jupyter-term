@@ -1,4 +1,4 @@
-PYTHON=python3
+PYTHON=python3.10
 VENV_BIN=.venv/bin
 
 RUNTEST=$(PYTHON) -m unittest -v -b
@@ -22,8 +22,9 @@ format:
 .PHONY: check
 check:
 	. .venv/bin/activate
-	$(VENV_BIN)/flake8 swm_jupyter_spawner
+	$(VENV_BIN)/ruff check swm_jupyter_spawner
 	$(VENV_BIN)/mypy swm_jupyter_spawner
+	$(VENV_BIN)/bandit -r swm_jupyter_spawner -c "pyproject.toml" --silent
 
 .PHONY: package
 package:
@@ -45,6 +46,11 @@ test:
 
 % : test%.py
 	${RUNTEST} test$@
+
+.PHONY: update-client-package
+update-client-package:
+	. .venv/bin/activate
+	pip install --upgrade -e ../swm-python-client
 
 .PHONY: requirements
 requirements: requirements.txt

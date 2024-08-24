@@ -1,15 +1,16 @@
 import io
 import os
-import time
-import typing
 import platform
+import queue
+import typing
+from datetime import datetime
 from tempfile import TemporaryDirectory
 
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
 from swmclient.api import SwmApi
 from swmclient.generated.models.job_state import JobState
-from swmclient.generated.types import File
+from tornado import gen
 from traitlets import Integer, Unicode
 
 from .form import SwmForm
@@ -30,7 +31,9 @@ class SwmSpawner(Spawner):  # type: ignore
     _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)
     _swm_job_id = None
 
-    _spool_dir = TemporaryDirectory(prefix=f".swm_jupyter_spawner_")
+    _spool_dir = TemporaryDirectory(prefix=".swm_jupyter_spawner_")
+    _msg_queue = queue.Queue()
+    _last_msg: str = ""
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -40,7 +43,7 @@ class SwmSpawner(Spawner):  # type: ignore
 
     def _read_config(self) -> dict[str, str]:
         config: dict[str, str] = {}
-        with open(self._config_file, 'r') as file:
+        with open(self._config_file, "r") as file:
             for line in file:
                 if not line:
                     continue
@@ -49,7 +52,7 @@ class SwmSpawner(Spawner):  # type: ignore
                     continue
                 if "=" not in line:
                     continue
-                parts = stripped_line.split('=', 1)
+                parts = stripped_line.split("=", 1)
                 if len(parts) != 2:
                     continue
                 config[parts[0].strip().lower()] = parts[1].strip()
@@ -58,25 +61,25 @@ class SwmSpawner(Spawner):  # type: ignore
 
     def _render_job_script(self) -> str:
         env = self.get_env()
-        jupyterhub_port = self._config.get('jupyterhub_port', self._jupyterhub_port)
-        jupyterhub_host = self._config.get('jupyterhub_host', self._jupyterhub_host)
-        jupyter_singleuser_port = self._config.get('jupyter_singleuser_port', self._jupyter_singleuser_port)
-        job_info: dict[str, str|int] = {
-            'account': self._config.get('account', 'openstack'),
-            'container_registry': self._config.get('container_registry', '172.28.128.2:6006'),
-            'container_image_name': self._config.get('container_image_image', 'jupyter/datascience-notebook'),
-            'server_port': jupyter_singleuser_port,
-            'container_image_tag': self._config.get('container_image_tag', 'hub-3.1.1'),
-            'cloud_image_name': self._config.get('cloud_image_name', 'ubuntu-22.04'),
-            'flavor': self.user_options['flavor'],
-            'ports': f'{jupyter_singleuser_port}/tcp/in,{jupyterhub_port}/tcp/out',
-            'jupyterhub_api_token': env['JUPYTERHUB_API_TOKEN'],
-            'jupyterhub_client_id': env['JUPYTERHUB_CLIENT_ID'],
-            'hub_url': f'http://{jupyterhub_host}:{jupyterhub_port}/hub/api',
-            'input_files': self.user_options['input_files'],
-            'output_files': self.user_options['output_files'],
+        jupyterhub_port = self._config.get("jupyterhub_port", self._jupyterhub_port)
+        jupyterhub_host = self._config.get("jupyterhub_host", self._jupyterhub_host)
+        jupyter_singleuser_port = self._config.get("jupyter_singleuser_port", self._jupyter_singleuser_port)
+        job_info: dict[str, str | int] = {
+            "account": self._config.get("account", "openstack"),
+            "container_registry": self._config.get("container_registry", "172.28.128.2:6006"),
+            "container_image_name": self._config.get("container_image_image", "jupyter/datascience-notebook"),
+            "server_port": jupyter_singleuser_port,
+            "container_image_tag": self._config.get("container_image_tag", "hub-3.1.1"),
+            "cloud_image_name": self._config.get("cloud_image_name", "ubuntu-22.04"),
+            "flavor": self.user_options["flavor"],
+            "ports": f"{jupyter_singleuser_port}/tcp/in,{jupyterhub_port}/tcp/out",
+            "jupyterhub_api_token": env["JUPYTERHUB_API_TOKEN"],
+            "jupyterhub_client_id": env["JUPYTERHUB_CLIENT_ID"],
+            "hub_url": f"http://{jupyterhub_host}:{jupyterhub_port}/hub/api",
+            "input_files": self.user_options["input_files"],
+            "output_files": self.user_options["output_files"],
         }
-        with open(os.path.dirname(__file__) + '/job.sh.jinja') as _file:
+        with open(os.path.dirname(__file__) + "/job.sh.jinja") as _file:
             job_script = Template(_file.read())
         job_script = job_script.render(job_info=job_info)
         self.log.info(f"Job script to submit: \n{job_script}")
@@ -123,12 +126,14 @@ class SwmSpawner(Spawner):  # type: ignore
     async def start(self) -> typing.Optional[tuple[str, int]]:
         """Start single-user server over SWM."""
         self._swm_job_id = await self._do_submit_rpc()
+        self._add_msg(f"Job submitted: {self._swm_job_id}", 1)
         self.log.debug(f"Starting User: {self.user.name}, job id: {self._swm_job_id}")
 
         if not self._swm_job_id:
             return None
 
         await self._wait_job_start()
+        self.log.info("Job start waiting finished")
         return self._jupyter_singleuser_ip, self._jupyter_singleuser_port
 
     async def poll(self) -> typing.Optional[int]:
@@ -157,6 +162,21 @@ class SwmSpawner(Spawner):  # type: ignore
             self.log.warning("Can't cancel job: ID is unknown")
         return None
 
+    async def progress(self) -> typing.AsyncGenerator[int, None] | None:
+        while True:
+            if not self._msg_queue.empty():
+                msg, progress = self._msg_queue.get()
+                if self._last_msg != msg:
+                    self._last_msg = msg
+                    current_time = datetime.now().strftime("%H:%M:%S")
+                    yield {"progress": progress, "message": f"{current_time}: {msg}"}
+                self._msg_queue.task_done()
+            else:
+                await gen.sleep(2)
+            if self.ready:
+                self.log.debug("Server is ready => exit start progress tracking")
+                break
+
     async def _do_submit_rpc(self) -> str:
         """Perform RPC to SWM in order to submit a new singleuser job"""
         job_script = self._render_job_script()
@@ -184,31 +204,52 @@ class SwmSpawner(Spawner):  # type: ignore
         else:
             self.log.warning("Can't cancel job: ID is unknown")
 
-    async def _wait_job_start(self) -> None:
-        if not self._swm_job_id:
-            self.log.warning("Can't fetch job: ID is unknown")
+    def _add_msg(self, msg: str, progress: int) -> None:
+        self._msg_queue.put((msg, progress))
 
+    async def _wait_job_start(self) -> None:
         while True:
             if job := self._swm_api.get_job(self._swm_job_id):
                 self.log.debug(f"Fetched job state: {job.state!s}")
                 if job.state == JobState.R:
                     if job.node_ips:
                         self._jupyter_singleuser_ip = job.node_ips[0]
-                        self.log.debug(f"Job {self._swm_job_id} main node IP: {self._jupyter_singleuser_ip}")
+                        msg = f"Job is running (IP: {self._jupyter_singleuser_ip}): {job.state_details}"
+                        self.log.debug(msg)
+                        self._add_msg(msg, 99)
                     else:
-                        self.log.warning(f"Job {self._swm_job_id} node IP list is empty")
+                        msg = f"Job {self._swm_job_id} node IP list is empty: {job.state_details}"
+                        self._add_msg(msg, 99)
+                        self.log.warning(msg)
+                    self.log.debug("Exit job waiting loop")
                     break
                 elif job.state == JobState.F:
-                    self.log.warning(f"Job {self._swm_job_id} already finished")
+                    msg = f"Job is finished: {job.state_details}"
+                    self._add_msg(msg, 100)
+                    self.log.warning(msg)
                     break
                 elif job.state == JobState.C:
-                    self.log.warning(f"Job {self._swm_job_id} is canceled")
+                    msg = f"Job is canceled: {job.state_details}"
+                    self._add_msg(msg, 100)
+                    self.log.warning(msg)
                     break
-                elif job.state in [JobState.Q, JobState.W, JobState.T]:
-                    self.log.debug(f"Job {self._swm_job_id} is not started yet, state={job.state!s}")
-                time.sleep(15)
+                elif job.state == JobState.Q:
+                    msg = f"Job is pending: {job.state_details}"
+                    progress = 5
+                elif job.state == JobState.W:
+                    msg = f"Job is waiting to start: {job.state_details}"
+                    progress = 80
+                elif job.state == JobState.T:
+                    progress = 50
+                    msg = f"Job data is transferring: {job.state_details}"
+
+                self._add_msg(msg, progress)
+                self.log.debug(msg)
+                await gen.sleep(10)
             else:
-                self.log.warning("Fetching job RPC did not return anything")
+                msg = "Fetching job RPC returned nothing!"
+                self._add_msg(msg, 99)
+                self.log.warning(msg)
                 break
 
     def render_options_form(self) -> str:

@@ -9,9 +9,15 @@ from setuptools import find_packages
 
 HERE = Path(__file__).parent.resolve()
 
-VERSION = {}
-with open(os.path.join(HERE, 'version.py')) as f:
-    exec(f.read(), {}, VERSION)
+def get_version():
+    cmd = "git describe --tags"
+    try:
+        result = check_output(
+            cmd.split(),
+        ).decode('utf-8').strip().split("-")[0]
+    except:
+        result = "?"
+    return result
 
 
 def get_long_description():
@@ -22,7 +28,7 @@ def get_long_description():
 
 setup_args = dict(
     name='swm_jupyter_spawner',
-    version=VERSION['__version__'],
+    version=get_version(),
     description="""A spawner for Jupyterhub to spawn notebooks over Sky Port""",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
@@ -47,7 +53,6 @@ setup_args = dict(
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3 :: Only",
         "Framework :: Jupyter",
