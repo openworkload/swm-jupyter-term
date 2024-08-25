@@ -50,7 +50,7 @@ class SwmForm:
         input_files: list[dict[str, bytes]] = form_data.get("files[]_file", [])
         options["input_files"] = self._save_tmp_input_files(input_files, spool_dir)
         options["output_files"] = [os.path.basename(file_path) for file_path in options["input_files"]]
-        options["flavor"] = form_data["it"][0]
+        options["flavor"] = form_data["selected_flavor_name"][0]
         self.log.debug(f"Parsed options: {options}")
         return options
 

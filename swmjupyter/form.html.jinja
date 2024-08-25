@@ -2,6 +2,44 @@
 #swm-settings label p {
     font-weight: normal;
 }
+.filter-container {
+    border: 0px solid gray;
+    padding: 20px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+.filter-label {
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    background-color: no;
+    padding: 0 5px;
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+}
+.flavor-table {
+    width: 100%;
+    border: 1px solid gray;
+    padding: 10px;
+    position: relative;
+    transition: all 0.3s ease;
+    background-color: #FAFFFF;
+}
+.flavor-table-header {
+    border: 1px solid gray;
+    background-color: #FAFFFB;
+}
+.flavor-row-selected {
+  background-color: #8888FF;
+}
+.hidden {
+    display: none;
+}
+table {
+    border-collapse: collapse;
+    transition: all 0.3s ease;
+}
 </style>
 
 
@@ -40,31 +78,110 @@
               list.style.display = 'block';
           }
         });
+
+        function toggleDiv() {
+            var table = document.getElementById('filterTable');
+            table.classList.toggle('hidden');
+
+            var filter_label = document.querySelector('.filter-label');
+            if (table.classList.contains('hidden')) {
+                filter_label.textContent = 'Filter ⏷';
+            } else {
+                filter_label.textContent = 'Filter ⏶';
+            }
+        }
+
+        var selected_flavor_row;
+        var selected_flavor_name;
+        function toggleRowSelection(row, flavor_name) {
+            if (selected_flavor_row) {
+                selected_flavor_row.classList.remove('flavor-row-selected');
+            }
+            row.classList.add('flavor-row-selected');
+            selected_flavor_row = row;
+            selected_flavor_name = flavor_name;
+            document.getElementById('selected_flavor_name').value = selected_flavor_name;
+        }
+
+        function filterNames() {
+            const filterValue = document.getElementById('nameFilter').value.toLowerCase();
+            const table = document.getElementById('flavorTable');
+            const rows = table.getElementsByTagName('tr');
+            for (let i = 1; i < rows.length; i++) {
+                const name_cell = rows[i].getElementsByTagName('td')[0];
+                const name = name_cell.textContent.toLowerCase();
+
+                if (name.includes(filterValue)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
     </script>
 
     <p>
         <label for="files">Select instance type:</label>
     </p>
 
+    <div class="filter-container" id="filterContainer">
+        <span class="filter-label" onclick="toggleDiv()">Filter ⏷</span>
+        <table id="filterTable" class="hidden" style="background-color:#e4ece8; border-collapse: collapse;">
+            <tr>
+                <td style="margin-left: 5px">
+                    <label for="nameFilter">Flavor name:&nbsp;</label><input type="text" oninput="filterNames()" size="20" maxlength="50" id="nameFilter">
+                </td>
+            </tr>
+        </table>
+    </div>
+
     <div style="margin-left: 10px">
+
     {% for provider_name, provider in providers.items() %}
         <label>{{ provider_name.capitalize() }}</label>
         <div style="margin-left: 10px">
-        {% for it in provider.instance_types %}
-            <label for='it-item-{{ it.flavor_name }}' class='form-control input-group' style="background-color:#FAFFFB">
-                <div class='col-md-1'>
-                    <input type='radio' name='it' id='it-item-{{ it.flavor_name }}' value='{{ it.flavor_name }}'/>
-                </div>
-                <div class='col-md-14'>
-                    <strong>{{ it.flavor_name }}: ${{ it.price }}, {{ it.remote_name }}, </strong>
+            <table id="flavorTable" class="flavor-table">
+                <tr class="flavor-table-header">
+                    <td>Name</td> <td>Storage</td> <td>Memory</td> <td>CPUs</td> <td>Price</td>
+                </tr>
+
+                {% for it in provider.instance_types %}
+                    {% set ns = namespace(storage="0", memory="0", cpus="0") %}
                     {% for res in it.resources %}
-                        {{ res.name }}={{ res.count }}
+                        {% if res.name == "storage" %}
+                            {% set ns.storage = res.count %}
+                        {% endif %}
+                        {% if res.name == "mem" %}
+                            {% set ns.memory = res.count %}
+                        {% endif %}
+                        {% if res.name == "cpus" %}
+                            {% set ns.cpus = res.count %}
+                        {% endif %}
                     {% endfor %}
-                </div>
-            </label>
-        {% endfor %}
+                    {{ "<tr onclick=\"toggleRowSelection(this, '" ~ it.flavor_name ~ "')\">" }}
+                        <td>
+                            {{ it.flavor_name }}
+                        </td>
+                        <td>
+                            {{ ns.storage }}
+                        </td>
+                        <td>
+                            {{ ns.memory }}
+                        </td>
+                        <td>
+                            {{ ns.cpus }}
+                        </td>
+                        <td>
+                            {{ it.price }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <input type="hidden" id="selected_flavor_name" name="selected_flavor_name" />
         </div>
+
     {% endfor %}
+
     </div>
 
 </div>
