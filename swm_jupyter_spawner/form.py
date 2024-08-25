@@ -45,16 +45,16 @@ class SwmForm:
         providers = self._get_providers(swm_api)
         return html_form.render(providers=providers)
 
-    def get_options(self, form_data: dict[str, list[dict[str, bytes | str]]], spool_dir: str) -> dict[str, typing.Any]:
+    def get_options(self, form_data: dict[str, list[dict[str, bytes]]], spool_dir: str) -> dict[str, typing.Any]:
         options: dict[str, typing.Any] = {}
-        input_files: list[dict[str, bytes | str]] = form_data.get("files[]_file", [])
+        input_files: list[dict[str, bytes]] = form_data.get("files[]_file", [])
         options["input_files"] = self._save_tmp_input_files(input_files, spool_dir)
         options["output_files"] = [os.path.basename(file_path) for file_path in options["input_files"]]
         options["flavor"] = form_data["it"][0]
         self.log.debug(f"Parsed options: {options}")
         return options
 
-    def _save_tmp_input_files(self, form_files: list[dict[str, bytes | str]], spool_dir: str) -> list[str]:
+    def _save_tmp_input_files(self, form_files: list[dict[str, bytes]], spool_dir: str) -> list[str]:
         result: list[str] = []
         if form_files:
             for file_info in form_files:

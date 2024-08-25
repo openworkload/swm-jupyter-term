@@ -1,9 +1,9 @@
 import io
 import os
 import platform
-import queue
 import typing
 from datetime import datetime
+from queue import Queue
 from tempfile import TemporaryDirectory
 
 from jinja2 import Template
@@ -18,24 +18,24 @@ from .form import SwmForm
 
 class SwmSpawner(Spawner):  # type: ignore
 
-    _config_file = Unicode(os.path.expanduser("~/.swm/jupyter-spawner.conf"), help="Gate config file", config=True)
+    _config_file = Unicode(os.path.expanduser("~/.swm/jupyter-spawner.conf"), help="Gate config file", config=True)  # type: ignore
 
-    _jupyterhub_port = Integer(8081, help="JupyterHub port", config=True)
-    _jupyterhub_host = Unicode("localhost", help="JupyterHub hostname resolvable from container", config=True)
-    _jupyter_singleuser_port = Integer(8888, help="jupyter server port", config=True)
+    _jupyterhub_port = Integer(8081, help="JupyterHub port", config=True)  # type: ignore
+    _jupyterhub_host = Unicode("localhost", help="JupyterHub hostname resolvable from container", config=True)  # type: ignore
+    _jupyter_singleuser_port = Integer(8888, help="jupyter server port", config=True)  # type: ignore
 
-    _swm_port = Integer(8443, help="swm-core user API port", config=True)
-    _swm_host = Unicode(platform.node(), help="swm-core user API hostname", config=True)
-    _swm_ca_file = Unicode("~/.swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)
-    _swm_key_file = Unicode("~/.swm/key.pem", help="PEM key file path", config=True)
-    _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)
+    _swm_port = Integer(8443, help="swm-core user API port", config=True)  # type: ignore
+    _swm_host = Unicode(platform.node(), help="swm-core user API hostname", config=True)  # type: ignore
+    _swm_ca_file = Unicode("~/.swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)  # type: ignore
+    _swm_key_file = Unicode("~/.swm/key.pem", help="PEM key file path", config=True)  # type: ignore
+    _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)  # type: ignore
     _swm_job_id = None
 
     _spool_dir = TemporaryDirectory(prefix=".swm_jupyter_spawner_")
-    _msg_queue = queue.Queue()
+    _msg_queue: Queue[tuple[str, int]] = Queue()
     _last_msg: str = ""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         super().__init__(*args, **kwargs)
         self._config = self._read_config()
         self._html_form = SwmForm(self.log)
@@ -81,9 +81,9 @@ class SwmSpawner(Spawner):  # type: ignore
         }
         with open(os.path.dirname(__file__) + "/job.sh.jinja") as _file:
             job_script = Template(_file.read())
-        job_script = job_script.render(job_info=job_info)
-        self.log.info(f"Job script to submit: \n{job_script}")
-        return job_script
+        job_script_rendered = job_script.render(job_info=job_info)
+        self.log.info(f"Job script to submit: \n{job_script_rendered}")
+        return job_script_rendered
 
     @property
     def _swm_api(self) -> SwmApi:
@@ -149,7 +149,7 @@ class SwmSpawner(Spawner):  # type: ignore
         await self._do_cancel_rpc()
         self.clear_state()
 
-    async def _fetch_job_state(self) -> typing.Optional[JobState]:
+    async def _fetch_job_state(self) -> typing.Any:
         """Perform RPC call to SWM to fetch the job state"""
         if self._swm_job_id:
             job = self._swm_api.get_job(self._swm_job_id)
@@ -255,5 +255,5 @@ class SwmSpawner(Spawner):  # type: ignore
     def render_options_form(self) -> str:
         return self._html_form.render(self._swm_api)
 
-    def options_from_form(self, form_data: typing.Dict[str, list[str]]) -> typing.Dict[str, typing.Any]:
+    def options_from_form(self, form_data: dict[str, list[dict[str, bytes]]]) -> typing.Dict[str, typing.Any]:
         return self._html_form.get_options(form_data, self._spool_dir.name)
