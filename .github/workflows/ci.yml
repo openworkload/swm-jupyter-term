@@ -1,0 +1,32 @@
+name: Python static checks
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  PYTHON_VERSION: 3.10
+
+jobs:
+  unittests:
+    runs-on: ubuntu-22.04
+
+    steps:
+    -
+      uses: actions/checkout@v4
+    -
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{env.PYTHON_VERSION}}
+    -
+      name: Install packages
+      run: |
+        python${{env.PYTHON_VERSION}} -m pip install --upgrade pip
+        pip${{env.PYTHON_VERSION}} install virtualenv
+    -
+      name: Run static checks
+      run: |
+        make prepare-venv
+        make check

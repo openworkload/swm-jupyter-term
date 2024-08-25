@@ -1,4 +1,14 @@
-Sky Port Terminal for Jupyter
+<p align="center">
+    <a href="https://github.com/openworkload/swm-jupyter-term/blob/master/LICENSE" alt="License">
+        <img src="https://img.shields.io/github/license/openworkload/swm-jupyter-term" />
+    </a>
+    <a href="https://github.com/openworkload/swm-jupyter-term/actions/workflows/ci.yml" alt="Latest CI tests result">
+        <img src="https://github.com/openworkload/swm-jupyter-term/actions/workflows/ci.yml/badge.svg?event=push" />
+    </a>
+</p>
+
+
+Sky Port Juputer terminal
 =============================
 
 # Sky Port project
