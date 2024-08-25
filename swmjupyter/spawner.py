@@ -31,7 +31,7 @@ class SwmSpawner(Spawner):  # type: ignore
     _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)  # type: ignore
     _swm_job_id = None
 
-    _spool_dir = TemporaryDirectory(prefix=".swm_jupyter_spawner_")
+    _spool_dir = TemporaryDirectory(prefix=".swmjupyter_")
     _msg_queue: Queue[tuple[str, int]] = Queue()
     _last_msg: str = ""
 

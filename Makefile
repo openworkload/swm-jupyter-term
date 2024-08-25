@@ -15,16 +15,16 @@ prepare-venv:
 .PHONY: format
 format:
 	. .venv/bin/activate
-	$(VENV_BIN)/autoflake -i -r --ignore-init-module-imports swm_jupyter_spawner
-	$(VENV_BIN)/black swm_jupyter_spawner
-	$(VENV_BIN)/isort swm_jupyter_spawner
+	$(VENV_BIN)/autoflake -i -r --ignore-init-module-imports swmjupyter
+	$(VENV_BIN)/black swmjupyter
+	$(VENV_BIN)/isort swmjupyter
 
 .PHONY: check
 check:
 	. .venv/bin/activate
-	$(VENV_BIN)/ruff check swm_jupyter_spawner
-	$(VENV_BIN)/mypy swm_jupyter_spawner
-	$(VENV_BIN)/bandit -r swm_jupyter_spawner -c "pyproject.toml" --silent
+	$(VENV_BIN)/ruff check swmjupyter
+	$(VENV_BIN)/mypy swmjupyter
+	$(VENV_BIN)/bandit -r swmjupyter -c "pyproject.toml" --silent
 
 .PHONY: package
 package:
@@ -34,6 +34,8 @@ package:
 .PHONY: clean
 clean:
 	rm -f ./dist/*.whl
+	rm -fr swmjupyter.egg-info/*
+	rm -fr build/*
 
 .PHONY: upload
 upload:
