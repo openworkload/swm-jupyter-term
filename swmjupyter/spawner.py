@@ -26,7 +26,7 @@ class SwmSpawner(Spawner):  # type: ignore
 
     _swm_port = Integer(8443, help="swm-core user API port", config=True)  # type: ignore
     _swm_host = Unicode(platform.node(), help="swm-core user API hostname", config=True)  # type: ignore
-    _swm_ca_file = Unicode("~/.swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)  # type: ignore
+    _swm_ca_file = Unicode("/opt/swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)  # type: ignore
     _swm_key_file = Unicode("~/.swm/key.pem", help="PEM key file path", config=True)  # type: ignore
     _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)  # type: ignore
     _swm_job_id = None
@@ -88,11 +88,17 @@ class SwmSpawner(Spawner):  # type: ignore
     @property
     def _swm_api(self) -> SwmApi:
         username = self.user.name
+        key_file = self._swm_key_file.format(username=username)
+        cert_file = self._swm_cert_file.format(username=username)
+        ca_file = self._swm_ca_file.format(username=username)
+        self.log.info(f"Using key: {key_file}")
+        self.log.info(f"Using cert: {cert_file}")
+        self.log.info(f"Using CA: {ca_file}")
         return SwmApi(
             url=f"https://{self._swm_host}:{self._swm_port}",
-            key_file=self._swm_key_file.format(username=username),
-            cert_file=self._swm_cert_file.format(username=username),
-            ca_file=self._swm_ca_file.format(username=username),
+            key_file=key_file,
+            cert_file=cert_file,
+            ca_file=ca_file,
         )
 
     def load_state(self, state: typing.Dict[str, typing.Any]) -> None:
