@@ -1,6 +1,6 @@
 include LICENSE
 include *.md
-include pyproject.toml
+include swmjupyter/*.jinja
 
 # Patterns to exclude from any directory
 global-exclude *~
