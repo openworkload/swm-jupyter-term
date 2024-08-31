@@ -33,9 +33,9 @@ package:
 
 .PHONY: clean
 clean:
-	rm -f ./dist/*.whl
-	rm -fr swmjupyter.egg-info/*
-	rm -fr build/*
+	rm -fr ./dist
+	rm -fr swmjupyter.egg-info
+	rm -fr build
 
 .PHONY: upload
 upload:
