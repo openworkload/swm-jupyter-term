@@ -171,7 +171,7 @@ sqlalchemy==1.4.29
     #   jupyterhub
 stevedore==5.3.0
     # via bandit
-swmclient==0.1.5
+swmclient==0.1.6
     # via -r requirements.in
 tomli==1.2.3
     # via
@@ -180,9 +180,7 @@ tomli==1.2.3
 tornado==6.1
     # via jupyterhub
 tqdm==4.62.3
-    # via
-    #   -r requirements.in
-    #   twine
+    # via twine
 traitlets==5.1.1
     # via
     #   jupyter-telemetry
