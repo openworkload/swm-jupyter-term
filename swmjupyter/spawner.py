@@ -5,6 +5,7 @@ import typing
 from datetime import datetime
 from queue import Queue
 from tempfile import TemporaryDirectory
+import pwd
 
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
@@ -31,7 +32,7 @@ class SwmSpawner(Spawner):  # type: ignore
     _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)
     _swm_job_id = None
 
-    _spool_dir = TemporaryDirectory(prefix=".swmjupyter_")
+    _spool_dir = TemporaryDirectory(dir=f"{os.environ['HOME']}/.swm", prefix=".swmjupyter_")
     _msg_queue: Queue[tuple[str, int]] = Queue()
     _last_msg: str = ""
 
