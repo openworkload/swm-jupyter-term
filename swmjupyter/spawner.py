@@ -18,17 +18,17 @@ from .form import SwmForm
 
 class SwmSpawner(Spawner):  # type: ignore
 
-    _config_file = Unicode(os.path.expanduser("~/.swm/jupyter-spawner.conf"), help="Gate config file", config=True)  # type: ignore
+    _config_file = Unicode(os.path.expanduser("~/.swm/jupyter-spawner.conf"), help="Gate config file", config=True)
 
-    _jupyterhub_port = Integer(8081, help="JupyterHub port", config=True)  # type: ignore
-    _jupyterhub_host = Unicode("localhost", help="JupyterHub hostname resolvable from container", config=True)  # type: ignore
-    _jupyter_singleuser_port = Integer(8888, help="jupyter server port", config=True)  # type: ignore
+    _jupyterhub_port = Integer(8081, help="JupyterHub port", config=True)
+    _jupyterhub_host = Unicode("localhost", help="JupyterHub hostname resolvable from container", config=True)
+    _jupyter_singleuser_port = Integer(8888, help="jupyter server port", config=True)
 
-    _swm_port = Integer(8443, help="swm-core user API port", config=True)  # type: ignore
-    _swm_host = Unicode(platform.node(), help="swm-core user API hostname", config=True)  # type: ignore
-    _swm_ca_file = Unicode("/opt/swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)  # type: ignore
-    _swm_key_file = Unicode("~/.swm/key.pem", help="PEM key file path", config=True)  # type: ignore
-    _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)  # type: ignore
+    _swm_port = Integer(8443, help="swm-core user API port", config=True)
+    _swm_host = Unicode(platform.node(), help="swm-core user API hostname", config=True)
+    _swm_ca_file = Unicode("/opt/swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)
+    _swm_key_file = Unicode("~/.swm/key.pem", help="PEM key file path", config=True)
+    _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)
     _swm_job_id = None
 
     _spool_dir = TemporaryDirectory(prefix=".swmjupyter_")
