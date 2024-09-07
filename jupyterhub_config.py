@@ -1,5 +1,4 @@
 import os
-import platform
 import sys
 
 # For development purpose we use the spawner package from the sources:
@@ -19,3 +18,4 @@ c.SwmSpawner._swm_ca_file = '~/.swm/spool/secure/cluster/ca-chain-cert.pem'
 c.SwmSpawner._swm_key_file = '~/.swm/key.pem'
 c.SwmSpawner._swm_cert_file = '~/.swm/cert.pem'
 c.SwmSpawner.start_timeout = 1800
+c.SwmSpawner.http_timeout = 60
