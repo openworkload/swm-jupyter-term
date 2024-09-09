@@ -11,58 +11,65 @@
 Sky Port Juputer terminal
 =============================
 
-# Sky Port project
+# Overview
 
-Sky Port is an universal bus between user software and compute resources. It can also be considered as a transportation layer between workload producers and compute resource providers. Sky Port makes it easy to connect user software to different cloud resources.
+Sky Port is an universal bus between user software and compute resources.
+It can also be considered as a transportation layer between workload producers and compute resource providers.
+Sky Port makes it easy to connect user software to different cloud resources.
 
-# Sky Port integration
+# JupyterHub integration
 
-The current project represents a custom spawner that allows to configure spawning options and submit jupyterlab job over Sky Port.
-The spawner python package is distributed vis PyPI as `swm-jupyter-spawner`.
+The project in this repository represents a custom spawner that allows spawning jupyterlab server over Sky Port.
+The spawner python package is distributed via PyPI: [swmjupyter](https://pypi.org/project/swmjupyter).
 
-## Development environment for the spawner
+## How to run
 
-Ensure `conda` and `pip` are installed and accessable via $PATH (installed in the dev container image by default).
-
-### 1. Create conda environment
+1. Ensure configurable-http-proxy is installed:
 ```bash
-# Run the dev container from swm-core first, then switch to swm-jupyter-term directory
-conda create -n swm-jupyter --override-channels --strict-channel-priority -c conda-forge -c anaconda nodejs configurable-http-proxy
-conda init bash
-```
-Activate conda:
-```bash
-conda activate swm-jupyter
+sudo apt install npm
+sudo npm install -g configurable-http-proxy
 ```
 
-Deactivate conda:
+2. Install jupyterhub and swmjupyter in virtual environment:
 ```bash
-conda deactivate
+python3 -m venv /tmp/jupyterhub
+source /tmp/jupyterhub/bin/activate
+pip install jupyterhub swmjupyter
 ```
 
-For local testing:
+3. Generate default JupyterHub configuration:
 ```bash
-docker pull jupyter/datascience-notebook:hub-3.1.1
+jupyterhub --generate-config
 ```
 
-## 2. Configure virtualenv
-```bash
-make prepare-venv
+4. Add Sky Port related settings to generated jupyterhub_config.py:
+```
+c.JupyterHub.spawner_class = 'swmjupyter.spawner.SwmSpawner'
+c.JupyterHub.authenticator_class = 'jupyterhub.auth.DummyAuthenticator'
+c.SwmSpawner._swm_ca_file = '~/.swm/spool/secure/cluster/ca-chain-cert.pem'
+c.SwmSpawner._swm_key_file = '~/.swm/key.pem'
+c.SwmSpawner._swm_cert_file = '~/.swm/cert.pem'
+c.SwmSpawner.start_timeout = 1800
 ```
 
-# JupyterHub spawner
-
-All you need to start using it is to have swm-core container running and then you start and login to jupyterhub.
-In order to start jupyterhub manually in a terminal:
+4. Start JupyterHub:
 ```bash
-conda activate swm-jupyter
-. .venv/bin/activate
 jupyterhub
 ```
+
+5. Submit Sky Port job:
+a. go to `http://localhost:8000` in a web browser,
+b. select notebook and other files that will be uploaded (if needed),
+c. select flavor for VM machine (or use name filter if needed),
+d. click "Start" button.
+
+In 10-15 minutes JupyterLab will be started in Azure.
+
 
 # Contributing
 
 We appreciate all contributions. If you are planning to contribute back bug-fixes, please do so without any further discussion. If you plan to contribute new features, utility functions or extensions, please first open an issue and discuss the feature with us. 
+
 
 # License
 
