@@ -8,15 +8,16 @@
     position: relative;
     transition: all 0.3s ease;
 }
-.filter-label {
-    position: absolute;
-    top: -10px;
-    left: 10px;
-    background-color: no;
-    padding: 0 5px;
-    cursor: pointer;
-    color: blue;
-    text-decoration: underline;
+.flavor-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-left: 10px;
+    flex-direction: column;
+}
+.flavor-table-header {
+    border: 1px solid gray;
+    background-color: #FAFFFB;
+    table-layout: fixed;
 }
 .flavor-table {
     width: 100%;
@@ -25,13 +26,10 @@
     position: relative;
     transition: all 0.3s ease;
     background-color: #FAFFFF;
-}
-.flavor-table-header {
-    border: 1px solid gray;
-    background-color: #FAFFFB;
+    table-layout: fixed;
 }
 .flavor-row-selected {
-  background-color: #8888FF;
+  background-color: #99ff99;
 }
 .hidden {
     display: none;
@@ -40,13 +38,51 @@ table {
     border-collapse: collapse;
     transition: all 0.3s ease;
 }
+
+.filter-box {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 10px;
+}
+.filter-box legend {
+    color: grey;
+    border: none;
+    padding: 0 10px;
+    font-weight: bold;
+    font-size: 10px;
+    display: inline-block;
+    width: 60px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.filter-label {
+    color: grey;
+    font-size: 13px;
+    font-weight: normal;
+}
+.filter-input-group {
+    display: flex;
+    gap: 10px;
+}
+.filter-input-group input {
+    padding: 1px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 12px;
+}
+.filter-input-group input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+}
 </style>
 
 
 <div class='form-group' id='swm-settings' style="background-color:#f0f5f5; padding: 10px;">
 
     <p>
-        <label for="files">Select notebooks local directory: </label>
+        <label for="files">1. Select notebooks local directory: </label>
         <br>
         <input type="file" accept=".ipynb" id="files" name="files[]" multiple style="display: none;"/>
         <input type="button" value="Browse..." onclick="document.getElementById('files').click();" />
@@ -79,39 +115,40 @@ table {
           }
         });
 
-        function toggleDiv() {
-            var table = document.getElementById('filterTable');
-            table.classList.toggle('hidden');
-
-            var filter_label = document.querySelector('.filter-label');
-            if (table.classList.contains('hidden')) {
-                filter_label.textContent = 'Filter ⏷';
-            } else {
-                filter_label.textContent = 'Filter ⏶';
-            }
-        }
-
         var selected_flavor_row;
         var selected_flavor_name;
         function toggleRowSelection(row, flavor_name) {
             if (selected_flavor_row) {
                 selected_flavor_row.classList.remove('flavor-row-selected');
+                selected_flavor_row = null;
+                selected_flavor_name = null;
+            } else {
+                row.classList.add('flavor-row-selected');
+                selected_flavor_row = row;
+                selected_flavor_name = flavor_name;
             }
-            row.classList.add('flavor-row-selected');
-            selected_flavor_row = row;
-            selected_flavor_name = flavor_name;
             document.getElementById('selected_flavor_name').value = selected_flavor_name;
         }
 
-        function filterNames() {
-            const filterValue = document.getElementById('nameFilter').value.toLowerCase();
+        function filterAll() {
             const table = document.getElementById('flavorTable');
             const rows = table.getElementsByTagName('tr');
-            for (let i = 1; i < rows.length; i++) {
-                const name_cell = rows[i].getElementsByTagName('td')[0];
-                const name = name_cell.textContent.toLowerCase();
 
-                if (name.includes(filterValue)) {
+            const name_filter_str = document.getElementById('nameFilter').value.toLowerCase();
+            const gpus_filter_str = document.getElementById('gpusFilter').value;
+            gpus_filter_int = parseInt(gpus_filter_str, 10);
+            gpus_filter_int = isNaN(gpus_filter_int) ? 0 : gpus_filter_int;
+            console.log("Filter=", gpus_filter_int);
+
+            for (let i = 0; i < rows.length; i++) {
+                const col = rows[i].getElementsByTagName('td')
+                const name_cell = col[0];
+                const gpus_cell = col[4];
+
+                const name = name_cell.textContent.toLowerCase();
+                const gpus = parseInt(gpus_cell.textContent, 10);
+
+                if (name.includes(name_filter_str) && gpus_filter_int <= gpus) {
                     rows[i].style.display = '';
                 } else {
                     rows[i].style.display = 'none';
@@ -120,34 +157,60 @@ table {
         }
     </script>
 
-    <p>
-        <label for="files">Select instance type:</label>
-    </p>
+    <label>2. Select instance type:</label>
 
-    <div class="filter-container" id="filterContainer">
-        <span class="filter-label" onclick="toggleDiv()">Filter ⏷</span>
-        <table id="filterTable" class="hidden" style="background-color:#e4ece8; border-collapse: collapse;">
-            <tr>
-                <td style="margin-left: 5px">
-                    <label for="nameFilter">Flavor name:&nbsp;</label><input type="text" oninput="filterNames()" size="20" maxlength="50" id="nameFilter">
-                </td>
-            </tr>
-        </table>
+    <div class="filter-container">
+        <fieldset class="filter-box">
+          <legend>FILTER</legend>
+          <div class="filter-input-group">
+             <label class="filter-label" for="nameFilter">Flavor:&nbsp;</label>
+             <input type="text" oninput="filterAll()" size="20" maxlength="50" id="nameFilter">
+             <label class="filter-label" for="gpusFilter">Min GPUs:&nbsp;</label>
+             <input type="text" oninput="filterAll()" size="5" maxlength="50" id="gpusFilter">
+          </div>
+        </fieldset>
     </div>
 
     <div style="margin-left: 10px">
 
     {% for provider_name, provider in providers.items() %}
         <label>{{ provider_name.capitalize() }}</label>
-        <div style="margin-left: 10px">
-            <table id="flavorTable" class="flavor-table">
+        <div class="flavor-table-container">
+            <table class="flavor-table">
+                <colgroup>
+                    <col style="width: 36%;">
+                    <col style="width: 15%;">
+                    <col style="width: 15%;">
+                    <col style="width: 10%;">
+                    <col style="width: 10%;">
+                    <col style="width: 14%;">
+                </colgroup>
                 <tr class="flavor-table-header">
-                    <td>Name</td> <td>Storage</td> <td>Memory</td> <td>CPUs</td> <td>Price</td>
+                    <td>Name</td>
+                    <td>Storage</td>
+                    <td>Memory</td>
+                    <td>CPUs</td>
+                    <td>GPUs</td>
+                    <td>Price</td>
                 </tr>
-
+            </table>
+        </div>
+        <div class="flavor-table-container">
+            <table id="flavorTable" class="flavor-table">
+                <colgroup>
+                    <col style="width: 36%;">
+                    <col style="width: 15%;">
+                    <col style="width: 15%;">
+                    <col style="width: 10%;">
+                    <col style="width: 10%;">
+                    <col style="width: 14%;">
+                </colgroup>
                 {% for it in provider.instance_types %}
-                    {% set ns = namespace(storage="0", memory="0", cpus="0") %}
+                    {% set ns = namespace(storage="0", memory="0", cpus="0", gpus="0") %}
                     {% for res in it.resources %}
+                        {% if res.name == "gpus" %}
+                            {% set ns.gpus = res.count %}
+                        {% endif %}
                         {% if res.name == "storage" %}
                             {% set ns.storage = res.count %}
                         {% endif %}
@@ -172,11 +235,15 @@ table {
                             {{ ns.cpus }}
                         </td>
                         <td>
+                            {{ ns.gpus }}
+                        </td>
+                        <td>
                             {{ it.price }}
                         </td>
                     </tr>
                 {% endfor %}
             </table>
+            </frameset>
             <input type="hidden" id="selected_flavor_name" name="selected_flavor_name" />
         </div>
 
