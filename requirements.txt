@@ -6,10 +6,10 @@
 #
 alembic==1.7.5
     # via jupyterhub
+annotated-types==0.7.0
+    # via pydantic
 anyio==3.4.0
     # via httpcore
-async-generator==1.10
-    # via jupyterhub
 attrs==21.4.0
     # via jsonschema
 autoflake==1.4
@@ -54,6 +54,7 @@ httpx==0.21.1
 idna==3.3
     # via
     #   anyio
+    #   jupyterhub
     #   requests
     #   rfc3986
 importlib-metadata==4.10.0
@@ -70,11 +71,11 @@ jinja2==3.0.3
     # via
     #   -r requirements.in
     #   jupyterhub
-jsonschema==4.3.3
-    # via jupyter-telemetry
-jupyter-telemetry==0.1.0
+jsonschema[format-nongpl]==4.3.3
+    # via jupyter-events
+jupyter-events==0.5.0
     # via jupyterhub
-jupyterhub==3.1.1
+jupyterhub==5.2.1
     # via -r requirements.in
 keyring==23.5.0
     # via twine
@@ -100,7 +101,7 @@ packaging==21.3
     # via
     #   bleach
     #   jupyterhub
-pamela==1.0.0
+pamela==1.2.0
     # via jupyterhub
 pathspec==0.9.0
     # via black
@@ -114,6 +115,10 @@ prometheus-client==0.12.0
     # via jupyterhub
 pycparser==2.21
     # via cffi
+pydantic==2.9.2
+    # via jupyterhub
+pydantic-core==2.23.4
+    # via pydantic
 pyflakes==2.4.0
     # via autoflake
 pygments==2.11.1
@@ -129,9 +134,11 @@ pyrsistent==0.18.0
 python-dateutil==2.8.2
     # via jupyterhub
 python-json-logger==2.0.2
-    # via jupyter-telemetry
+    # via jupyter-events
 pyyaml==6.0.2
-    # via bandit
+    # via
+    #   bandit
+    #   jupyter-events
 readme-renderer==32.0
     # via twine
 requests==2.26.0
@@ -147,10 +154,6 @@ rfc3986[idna2008]==1.5.0
     #   twine
 rich==13.2.0
     # via bandit
-ruamel-yaml==0.17.20
-    # via jupyter-telemetry
-ruamel-yaml-clib==0.2.6
-    # via ruamel-yaml
 ruff==0.6.2
     # via -r requirements.in
 secretstorage==3.3.1
@@ -183,14 +186,16 @@ tqdm==4.62.3
     # via twine
 traitlets==5.1.1
     # via
-    #   jupyter-telemetry
+    #   jupyter-events
     #   jupyterhub
 twine==3.7.1
     # via -r requirements.in
-typing-extensions==4.0.1
+typing-extensions==4.12.2
     # via
     #   black
     #   mypy
+    #   pydantic
+    #   pydantic-core
 urllib3==1.26.7
     # via requests
 webencodings==0.5.1

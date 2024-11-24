@@ -67,10 +67,10 @@ class SwmSpawner(Spawner):  # type: ignore
         jupyter_singleuser_port = self._config.get("jupyter_singleuser_port", self._jupyter_singleuser_port)
         job_info: dict[str, str | int] = {
             "account": self._config.get("account", "openstack"),
-            "container_registry": self._config.get("container_registry", "172.28.128.2:6006"),
-            "container_image_name": self._config.get("container_image_image", "jupyter/datascience-notebook"),
+            "container_registry": self._config.get("container_registry", "swmregistry.azurecr.io"),
+            "container_image_name": self._config.get("container_image_name", "jupyter/pytorch-notebook"),
             "server_port": jupyter_singleuser_port,
-            "container_image_tag": self._config.get("container_image_tag", "hub-3.1.1"),
+            "container_image_tag": self._config.get("container_image_tag", "cuda12-hub-5.2.1"),
             "cloud_image_name": self._config.get("cloud_image_name", "ubuntu-22.04"),
             "flavor": self.user_options["flavor"],
             "ports": f"{jupyter_singleuser_port}/tcp/in,{jupyterhub_port}/tcp/out",
@@ -92,9 +92,6 @@ class SwmSpawner(Spawner):  # type: ignore
         key_file = self._swm_key_file.format(username=username)
         cert_file = self._swm_cert_file.format(username=username)
         ca_file = self._swm_ca_file.format(username=username)
-        self.log.info(f"Using key: {key_file}")
-        self.log.info(f"Using cert: {cert_file}")
-        self.log.info(f"Using CA: {ca_file}")
         return SwmApi(
             url=f"https://{self._swm_host}:{self._swm_port}",
             key_file=key_file,
@@ -242,12 +239,32 @@ class SwmSpawner(Spawner):  # type: ignore
                     break
                 elif job.state == JobState.Q:
                     msg = f"Job is pending: {job.state_details}"
-                    progress = 5
+                    if job.state_details.lower().startswith("data uploaded"):
+                        progress = 90
+                    else:
+                        progress = 5
                 elif job.state == JobState.W:
                     msg = f"Job is waiting to start: {job.state_details}"
-                    progress = 80
+                    if job.state_details.lower().startswith("initiate a new partition"):
+                        progress = 10
+                    elif job.state_details.lower().startswith("partition spawned"):
+                        progress = 15
+                    elif job.state_details.lower().startswith("partition has not been created yet"):
+                        progress = 17
+                    elif job.state_details.lower().startswith("waiting for ssh provisioning port"):
+                        progress = 20
+                    elif job.state_details.lower().startswith("uploading the worker"):
+                        progress = 25
+                    elif job.state_details.lower().startswith("start secured tunnel"):
+                        progress = 50
+                    elif job.state_details.lower().startswith("sky port connected"):
+                        progress = 60
+                    elif job.state_details.lower().startswith("waiting for sky port port readiness"):
+                        progress = 70
+                    elif job.state_details.lower().startswith("data uploaded"):
+                        progress = 95
                 elif job.state == JobState.T:
-                    progress = 50
+                    progress = 80
                     msg = f"Job data is transferring: {job.state_details}"
 
                 self._add_msg(msg, progress)

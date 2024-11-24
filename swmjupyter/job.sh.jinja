@@ -21,6 +21,8 @@ export JUPYTER_RUNTIME_DIR=/tmp
 export JUPYTERHUB_USER=$USER
 export JUPYTERHUB_SERVICE_PREFIX=/user/$USER
 export JUPYTERHUB_SERVICE_URL=http://0.0.0.0:{{ job_info["server_port"] }}
+export JUPYTERHUB_OAUTH_ACCESS_SCOPES="[\"access:servers!server=$USER/\", \"access:servers!user=$USER\"]"
+export NVIDIA_VISIBLE_DEVICES=all
 
 echo Start single user jupyter server
 jupyterhub-singleuser --debug
