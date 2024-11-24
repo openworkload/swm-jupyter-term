@@ -34,7 +34,7 @@ sudo npm install -g configurable-http-proxy
 ```bash
 python3 -m venv /tmp/jupyterhub
 source /tmp/jupyterhub/bin/activate
-pip install jupyterhub==3.1.1 swmjupyter
+pip install jupyterhub==5.2.1 swmjupyter
 ```
 
 3. Generate default JupyterHub configuration:
