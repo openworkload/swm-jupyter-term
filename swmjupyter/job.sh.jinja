@@ -11,6 +11,7 @@
 #SWM container-image {{ job_info["container_registry"] }}/{{ job_info["container_image_name"] }}:{{ job_info["container_image_tag"] }}
 #SWM input-files {{ " ".join(job_info["input_files"]) }}
 #SWM output-files {{ " ".join(job_info["output_files"]) }}
+#SWM storage {{ job_info["storage"] }}
 
 export HOME=$(pwd)
 export XDG_CACHE_HOME=${HOME}/.cache/
