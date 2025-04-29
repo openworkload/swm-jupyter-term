@@ -22,46 +22,25 @@ Sky Port makes it easy to connect user software to different cloud resources.
 The project in this repository represents a custom spawner that allows spawning jupyterlab server over Sky Port.
 The spawner python package is distributed via PyPI: [swmjupyter](https://pypi.org/project/swmjupyter).
 
-## How to run
+## How to run in development mode
 
-1. Ensure configurable-http-proxy is installed:
+1. Run skyport dev container and go to top sources directory of this repo.
+
+2. Install dependencies:
 ```bash
-sudo apt install npm
-sudo npm install -g configurable-http-proxy
+make prepare-venv
 ```
 
-2. Install jupyterhub and swmjupyter in virtual environment:
+3. Start JupyterHub:
 ```bash
-python3 -m venv /tmp/jupyterhub
-source /tmp/jupyterhub/bin/activate
-pip install jupyterhub==5.2.1 swmjupyter
+make run
 ```
 
-3. Generate default JupyterHub configuration:
-```bash
-jupyterhub --generate-config
-```
-
-4. Add Sky Port related settings to generated jupyterhub_config.py:
-```
-c.JupyterHub.spawner_class = 'swmjupyter.spawner.SwmSpawner'
-c.JupyterHub.authenticator_class = 'jupyterhub.auth.DummyAuthenticator'
-c.SwmSpawner._swm_ca_file = '~/.swm/spool/secure/cluster/ca-chain-cert.pem'
-c.SwmSpawner._swm_key_file = '~/.swm/key.pem'
-c.SwmSpawner._swm_cert_file = '~/.swm/cert.pem'
-c.SwmSpawner.start_timeout = 1800
-```
-
-4. Start JupyterHub:
-```bash
-jupyterhub
-```
-
-5. Submit Sky Port job:
-a. go to `http://localhost:8000` in a web browser,
-b. select notebook and other files that will be uploaded (if needed),
-c. select flavor for VM machine (or use name filter if needed),
-d. click "Start" button.
+4. Submit Sky Port job:
+    a. go to `http://localhost:8000` in a web browser,
+    b. select notebook and other files that will be uploaded (if needed),
+    c. select flavor for VM machine (or use name filter if needed),
+    d. click "Start" button.
 
 In 10-15 minutes JupyterLab will be started in Azure.
 

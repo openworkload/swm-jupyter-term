@@ -9,8 +9,13 @@ ALLMODULES=$(patsubst %.py, %.py, $(wildcard test*.py))
 prepare-venv: .SHELLFLAGS := -euo pipefail -c
 prepare-venv: SHELL := bash
 prepare-venv:
-	virtualenv --system-site-packages .venv
+	$(PYTHON) -m venv --system-site-packages .venv
 	$(VENV_BIN)/pip install --ignore-installed --no-deps -r requirements.txt
+
+.PHONY: run
+run:
+	. .venv/bin/activate
+	jupyterhub --debug
 
 .PHONY: format
 format:
