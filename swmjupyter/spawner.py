@@ -1,6 +1,6 @@
 import io
 import os
-import platform
+import socket
 import typing
 from datetime import datetime
 from queue import Queue
@@ -26,7 +26,7 @@ class SwmSpawner(Spawner):  # type: ignore
     _jupyter_singleuser_port = Integer(8888, help="jupyter server port", config=True)
 
     _swm_port = Integer(8443, help="swm-core user API port", config=True)
-    _swm_host = Unicode(platform.node(), help="swm-core user API hostname", config=True)
+    _swm_host = Unicode(socket.getfqdn(), help="swm-core user API hostname", config=True)
     _swm_ca_file = Unicode("/opt/swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)
     _swm_key_file = Unicode("~/.swm/key.pem", help="PEM key file path", config=True)
     _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)
