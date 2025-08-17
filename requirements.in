@@ -4,9 +4,9 @@ black
 ruff
 isort
 mypy >= 0.981
-twine
+twine >= 5.1.1, <6.0.0
 wheel
 
 jinja2
 jupyterhub == 5.2.1
-swmclient >= 0.1.5
+swmclient >= 0.1.7

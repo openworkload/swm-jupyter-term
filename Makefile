@@ -10,7 +10,9 @@ prepare-venv: .SHELLFLAGS := -euo pipefail -c
 prepare-venv: SHELL := bash
 prepare-venv:
 	$(PYTHON) -m venv --system-site-packages .venv
+	$(VENV_BIN)/pip install --upgrade pip
 	$(VENV_BIN)/pip install --ignore-installed --no-deps -r requirements.txt
+	$(VENV_BIN)/pip install build
 
 .PHONY: run
 run:
