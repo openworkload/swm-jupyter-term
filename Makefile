@@ -38,6 +38,10 @@ package:
 	. .venv/bin/activate
 	$(PYTHON) -m build
 
+.PHONY: build-container
+build-container:
+	docker build -t skyport-jupyterhub .
+
 .PHONY: clean
 clean:
 	rm -fr ./dist
