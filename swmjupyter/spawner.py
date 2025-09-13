@@ -74,6 +74,7 @@ class SwmSpawner(Spawner):  # type: ignore
             "cloud_image_name": self._config.get("cloud_image_name", "ubuntu-22.04"),
             "flavor": self.user_options["flavor"],
             "ports": f"{jupyter_singleuser_port}/tcp/in,{jupyterhub_port}/tcp/out",
+            "submission_address": self._config.get("submission_address", "jupyterhub"),
             "jupyterhub_api_token": env["JUPYTERHUB_API_TOKEN"],
             "jupyterhub_client_id": env["JUPYTERHUB_CLIENT_ID"],
             "hub_url": f"http://{jupyterhub_host}:{jupyterhub_port}/hub/api",
