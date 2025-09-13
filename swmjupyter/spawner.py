@@ -26,13 +26,13 @@ class SwmSpawner(Spawner):  # type: ignore
     _jupyter_singleuser_port = Integer(8888, help="jupyter server port", config=True)
 
     _swm_port = Integer(8443, help="swm-core user API port", config=True)
-    _swm_host = Unicode(socket.getfqdn(), help="swm-core user API hostname", config=True)
+    _swm_host = Unicode(os.getenv("SKYPORT_HOST", "skyport.openworkload.org"), help="swm-core user API host", config=True)
     _swm_ca_file = Unicode("/opt/swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)
     _swm_key_file = Unicode("~/.swm/key.pem", help="PEM key file path", config=True)
     _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)
     _swm_job_id = None
 
-    _spool_dir = TemporaryDirectory(dir=f"{os.environ['HOME']}/.swm", prefix=".swmjupyter_")
+    _spool_dir = TemporaryDirectory(prefix=".swmjupyter_")
     _msg_queue: Queue[tuple[str, int]] = Queue()
     _last_msg: str = ""
 
@@ -93,8 +93,10 @@ class SwmSpawner(Spawner):  # type: ignore
         key_file = self._swm_key_file.format(username=username)
         cert_file = self._swm_cert_file.format(username=username)
         ca_file = self._swm_ca_file.format(username=username)
+        swm_core_addr = f"https://{self._swm_host}:{self._swm_port}"
+        self.log.info(f"Sky Port core address: {swm_core_addr}")
         return SwmApi(
-            url=f"https://{self._swm_host}:{self._swm_port}",
+            url=swm_core_addr,
             key_file=key_file,
             cert_file=cert_file,
             ca_file=ca_file,
