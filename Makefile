@@ -4,6 +4,8 @@ VENV_BIN=.venv/bin
 RUNTEST=$(PYTHON) -m unittest -v -b
 ALLMODULES=$(patsubst %.py, %.py, $(wildcard test*.py))
 
+START_CONTAINER = 
+
 .PHONY: prepare-venv
 .ONESHELL:
 prepare-venv: .SHELLFLAGS := -euo pipefail -c
@@ -13,11 +15,6 @@ prepare-venv:
 	$(VENV_BIN)/pip install --upgrade pip
 	$(VENV_BIN)/pip install --ignore-installed --no-deps -r requirements.txt
 	$(VENV_BIN)/pip install build
-
-.PHONY: run
-run:
-	. .venv/bin/activate
-	jupyterhub --debug
 
 .PHONY: format
 format:
@@ -41,6 +38,14 @@ package:
 .PHONY: build-container
 build-container:
 	docker build -t skyport-jupyterhub .
+
+.PHONY: start-container
+start-container:
+	./start-container.sh
+
+.PHONY: start
+start:
+	./start.sh
 
 .PHONY: clean
 clean:
