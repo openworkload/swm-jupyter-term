@@ -37,7 +37,7 @@ NETWORK=skyportnet
 
 CONTAINER_NAME=jupyterhub
 IMAGE_NAME=skyport-jupyterhub
-USER_INTERFACE_PORT=8000
+USER_API_PORT=8000
 
 RUNNING=$(docker inspect -f '{{.State.Running}}' ${CONTAINER_NAME} 2>/dev/null)
 NOT_RUNNING=$?
@@ -51,7 +51,7 @@ fi
 
 if [ "$NOT_RUNNING" != "0" ]; then
     docker run\
-        --publish $USER_INTERFACE_PORT:$USER_INTERFACE_PORT\
+        --publish $USER_API_PORT:$USER_API_PORT\
         --env SKYPORT_HOST=$(hostname).$DOMAIN\
         --volume ./jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py\
         --volume $HOME/.swm:/root/.swm\

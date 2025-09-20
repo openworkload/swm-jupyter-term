@@ -149,6 +149,9 @@ class SwmSpawner(Spawner):  # type: ignore
         job_state = await self._fetch_job_state()
         if job_state in [JobState.R, JobState.W, JobState.T]:
             return None
+        if job_state == JobState.E:
+            self.stop()
+            return None
         self.clear_state()
         return 0
 
@@ -238,6 +241,11 @@ class SwmSpawner(Spawner):  # type: ignore
                     break
                 elif job.state == JobState.C:
                     msg = f"Job is canceled: {job.state_details}"
+                    self._add_msg(msg, 100)
+                    self.log.warning(msg)
+                    break
+                elif job.state == JobState.E:
+                    msg = f"Job failed: {job.state_details}"
                     self._add_msg(msg, 100)
                     self.log.warning(msg)
                     break
