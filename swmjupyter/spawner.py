@@ -71,7 +71,7 @@ class SwmSpawner(Spawner):  # type: ignore
             "container_image_name": self._config.get("container_image_name", "jupyter/pytorch-notebook"),
             "server_port": jupyter_singleuser_port,
             "container_image_tag": self._config.get("container_image_tag", "cuda12-hub-5.2.1"),
-            "cloud_image_name": self._config.get("cloud_image_name", "ubuntu-22.04"),
+            "cloud_image_name": self.user_options["cloud-image"],
             "flavor": self.user_options["flavor"],
             "gpus": self.user_options["gpus"],
             "ports": f"{jupyter_singleuser_port}/tcp/in,{jupyterhub_port}/tcp/out",

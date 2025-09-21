@@ -1,5 +1,5 @@
 <style>
-#swm-settings label p {
+swm-settings label p {
     font-weight: normal;
 }
 .filter-container {
@@ -76,10 +76,30 @@ table {
     border-color: #4a90e2;
     box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
 }
+.image-label {
+    color: grey;
+    font-size: 13px;
+    font-weight: normal;
+    display: inline-block;
+    margin-left: 10px;
+}
+.provider-label {
+    color: green;
+    font-size: 16px;
+    font-weight: normal;
+    display: inline-block;
+    margin-left: 10px;
+}
+.form-div {
+    background-color: #f0f5f5;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
 </style>
 
 
-<div class='form-group' id='swm-settings' style="background-color:#f0f5f5; padding: 10px;">
+<div id='swm-settings' class="form-div">
 
     <p>
         <label for="files">1. Select notebooks local directory: </label>
@@ -134,6 +154,11 @@ table {
             document.getElementById('selected_flavor_gpus').value = selected_flavor_gpus;
         }
 
+        function toggleImageSelection(list) {
+            document.getElementById('selected_cloud_image_name').value = list.value
+            console.log('Hidden field updated with value:', list.value);
+        }
+
         function filterAll() {
             const table = document.getElementById('flavorTable');
             const rows = table.getElementsByTagName('tr');
@@ -178,7 +203,19 @@ table {
     <div style="margin-left: 10px">
 
     {% for provider_name, provider in providers.items() %}
-        <label>{{ provider_name.capitalize() }}</label>
+        <label class="provider-label">{{ provider_name.capitalize() }}</label>
+
+        {% if provider.vm_images %}
+            <p>
+            <label class="image-label" for="vm_image_{{ provider_name }}">Cloud node image:&nbsp;</label>
+            <select onclick="toggleImageSelection(this)" id="vm_image_{{ provider_name }}" name="vm_image_{{ provider_name }}">
+                {% for it in provider.vm_images %}
+                    <option value="{{ it }}">{{it}}</option>
+                {% endfor %}
+            </select>
+            </p>
+        {% endif %}
+
         <div class="flavor-table-container">
             <table class="flavor-table">
                 <colgroup>
@@ -250,6 +287,7 @@ table {
             </frameset>
             <input type="hidden" id="selected_flavor_name" name="selected_flavor_name" />
             <input type="hidden" id="selected_flavor_gpus" name="selected_flavor_gpus" />
+            <input type="hidden" id="selected_cloud_image_name" name="selected_cloud_image_name" />
         </div>
 
     {% endfor %}

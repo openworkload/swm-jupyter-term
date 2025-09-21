@@ -19,6 +19,7 @@ class InstanceType:
 class Provider:
     name: str
     instance_types: list[InstanceType]
+    vm_images: list[str]
 
 
 class SwmForm:
@@ -35,8 +36,15 @@ class SwmForm:
             else:
                 remote_name = "Other"
             instance_type = InstanceType(flavor.name, flavor.price, flavor.resources)
-            providers.setdefault(remote_name, Provider(name=remote_name, instance_types=[]))
+            providers.setdefault(remote_name, Provider(name=remote_name, instance_types=[], vm_images=[]))
             providers[remote_name].instance_types.append(instance_type)
+
+        for image in swm_api.get_images():
+            if image.remote_id:
+                remote = next(remote_site for remote_site in remote_sites if image.remote_id == remote_site.id)
+                remote_name = remote.name
+                providers[remote_name].vm_images.append(image.name)
+
         return providers
 
     def render(self, swm_api: SwmApi) -> str:
@@ -52,6 +60,7 @@ class SwmForm:
         options["output_files"] = [os.path.basename(file_path) for file_path in options["input_files"]]
         options["flavor"] = form_data["selected_flavor_name"][0]
         options["gpus"] = form_data["selected_flavor_gpus"][0]
+        options["cloud-image"] = form_data["selected_cloud_image_name"][0]
         self.log.debug(f"Parsed options: {options}")
         return options
 
