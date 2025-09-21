@@ -117,17 +117,21 @@ table {
 
         var selected_flavor_row;
         var selected_flavor_name;
-        function toggleRowSelection(row, flavor_name) {
+        var selected_flavor_gpus;
+        function toggleRowSelection(row, flavor_name, gpus) {
             if (selected_flavor_row) {
                 selected_flavor_row.classList.remove('flavor-row-selected');
                 selected_flavor_row = null;
                 selected_flavor_name = null;
+                selected_flavor_gpus = "0";
             } else {
                 row.classList.add('flavor-row-selected');
                 selected_flavor_row = row;
                 selected_flavor_name = flavor_name;
+                selected_flavor_gpus = gpus;
             }
             document.getElementById('selected_flavor_name').value = selected_flavor_name;
+            document.getElementById('selected_flavor_gpus').value = selected_flavor_gpus;
         }
 
         function filterAll() {
@@ -221,7 +225,7 @@ table {
                             {% set ns.cpus = res.count %}
                         {% endif %}
                     {% endfor %}
-                    {{ "<tr onclick=\"toggleRowSelection(this, '" ~ it.flavor_name ~ "')\">" }}
+                    {{ "<tr onclick=\"toggleRowSelection(this, '" ~ it.flavor_name ~ "', '" ~ ns.gpus ~ "')\">" }}
                         <td>
                             {{ it.flavor_name }}
                         </td>
@@ -245,6 +249,7 @@ table {
             </table>
             </frameset>
             <input type="hidden" id="selected_flavor_name" name="selected_flavor_name" />
+            <input type="hidden" id="selected_flavor_gpus" name="selected_flavor_gpus" />
         </div>
 
     {% endfor %}

@@ -13,6 +13,7 @@
 #SWM input-files {{ " ".join(job_info["input_files"]) }}
 #SWM output-files {{ " ".join(job_info["output_files"]) }}
 #SWM storage {{ job_info["storage"] }}
+#SWM gpus {{ job_info["gpus"] }}
 
 export HOME=$(pwd)
 export XDG_CACHE_HOME=${HOME}/.cache/
