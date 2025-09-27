@@ -11,38 +11,48 @@
 Sky Port Juputer terminal
 =============================
 
-# Overview
+# Sky Port project
 
-Sky Port is an universal bus between user software and compute resources.
-It can also be considered as a transportation layer between workload producers and compute resource providers.
-Sky Port makes it easy to connect user software to different cloud resources.
+Sky Port makes it easy to consume cloud resources by user software. It can also be considered as a transportation layer between workload producers and compute resource providers.
 
 # JupyterHub integration
 
-The project in this repository represents a custom spawner that allows spawning jupyterlab server over Sky Port.
+The project in this repository represents a custom spawner that allows running jupyterlab server via Sky Port.
 The spawner python package is distributed via PyPI: [swmjupyter](https://pypi.org/project/swmjupyter).
 
-## How to run in development mode
+## Run in development mode
 
-1. Run skyport dev container and go to top sources directory of this repo.
+* Run skyport development container (`make cr` in swm-core directory) and go back to top sources directory of this repo.
 
-2. Install dependencies:
+* Install dependencies:
 ```bash
 make prepare-venv
 ```
 
-3. Start JupyterHub:
+* Start JupyterHub:
 ```bash
-make run
+make start
 ```
 
-4. Submit Sky Port job:
-    a. go to `http://localhost:8000` in a web browser,
-    b. select notebook and other files that will be uploaded (if needed),
-    c. select flavor for VM machine (or use name filter if needed),
-    d. click "Start" button.
+## Run in release mode (in container)
 
-In 10-15 minutes JupyterLab will be started in Azure.
+* Build release container:
+```bash
+make build-container
+```
+
+* Start JupyterHub container:
+```bash
+make start-container
+```
+
+# Usage:
+* Go to [http://localhost:8000](http://localhost:8000) in a web browser.
+* Select notebook and other files that will be uploaded (if needed).
+* Select flavor and image for VM machine (use filter if needed).
+* Press "Start" button.
+
+In 7-10 minutes JupyterLab will be started.
 
 
 # Contributing
