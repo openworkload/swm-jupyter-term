@@ -270,7 +270,7 @@ class SwmSpawner(Spawner):  # type: ignore
                     elif job.state_details.lower().startswith("start secured tunnel"):
                         progress = 50
                     elif job.state_details.lower().startswith("sky port connected"):
-                        progress = 60
+                        progress = 70
                     elif job.state_details.lower().startswith("waiting for sky port port readiness"):
                         progress = 70
                     elif job.state_details.lower().startswith("data uploaded"):
