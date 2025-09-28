@@ -37,7 +37,7 @@ package:
 
 .PHONY: build-container
 build-container:
-	docker build -t skyport-jupyterhub .
+	docker build --no-cache -t skyport-jupyterhub .
 
 .PHONY: start-container
 start-container:
