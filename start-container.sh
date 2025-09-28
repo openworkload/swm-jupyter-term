@@ -52,8 +52,6 @@ fi
 if [ "$NOT_RUNNING" != "0" ]; then
     docker run\
         --publish $USER_API_PORT:$USER_API_PORT\
-        --env SKYPORT_HOST=$(hostname).$DOMAIN\
-        --volume ./jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py\
         --volume $HOME/.swm:/root/.swm\
         --name $CONTAINER_NAME\
         --hostname $CONTAINER_NAME\
