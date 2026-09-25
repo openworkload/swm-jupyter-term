@@ -7,11 +7,11 @@ on:
     branches: [ "master" ]
 
 env:
-  PYTHON_VERSION: "3.10"
+  PYTHON_VERSION: "3.12"
 
 jobs:
   unittests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     -

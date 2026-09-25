@@ -1,4 +1,4 @@
-PYTHON=python3.10
+PYTHON=python3.12
 VENV_BIN=.venv/bin
 
 RUNTEST=$(PYTHON) -m unittest -v -b
@@ -60,7 +60,7 @@ upload:
 
 .PHONY: test
 test:
-	${RUNTEST} ${ALLMODULES}
+	@mods="$(wildcard test*.py)"; 	if [ -n "$$mods" ]; then ${RUNTEST} $$mods; else echo "No unit test modules found"; fi
 
 % : test%.py
 	${RUNTEST} test$@

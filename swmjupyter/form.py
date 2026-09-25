@@ -51,7 +51,7 @@ class SwmForm:
         with open(os.path.dirname(__file__) + "/form.html.jinja") as _file:
             html_form = Template(_file.read())
         providers = self._get_providers(swm_api)
-        return html_form.render(providers=providers)
+        return str(html_form.render(providers=providers))
 
     def get_options(self, form_data: dict[str, list[dict[str, bytes]]], spool_dir: str) -> dict[str, typing.Any]:
         options: dict[str, typing.Any] = {}

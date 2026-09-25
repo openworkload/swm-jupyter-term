@@ -1,4 +1,4 @@
-FROM jupyterhub/jupyterhub:5.2.1
+FROM jupyterhub/jupyterhub:6.0.1
 
 COPY jupyterhub_config.py /srv/jupyterhub/jupyterhub_config.py
 

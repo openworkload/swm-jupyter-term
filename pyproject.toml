@@ -1,7 +1,7 @@
 [build-system]
 requires = [
-    "setuptools==75.6.0",
-    "setuptools-git-versioning>=2.0,<3",
+    "setuptools==84.0.0",
+    "setuptools-git-versioning>=2.0,<4",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
@@ -29,14 +29,14 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3 :: Only",
 ]
-requires-python = "~=3.10"
+requires-python = "~=3.12"
 dependencies = [
     "jinja2",
-    "jupyterhub == 5.2.1",
-    "jupyterlab >= 3.5.3",
+    "jupyterhub",
+    "jupyterlab",
     "swmclient >= 0.1.5",
 ]
 license = {text = "BSD 3-Clause License"}
@@ -52,10 +52,10 @@ Distribution = "https://pypi.org/project/swmjupyter"
 
 [project.optional-dependencies]
 build = [
-    "build==1.2.1"
+    "build==1.6.1"
 ]
 publish = [
-    "twine==5.1.1"
+    "twine==7.0.0"
 ]
 test = [
     "pytest",
@@ -80,7 +80,7 @@ readme = {file = ["README.md"], content-type = "text/markdown"}
 
 [tool.black]
 line-length = 120
-target-version = ['py310']
+target-version = ['py312']
 exclude = '''
 (
   /(
@@ -115,7 +115,7 @@ skip_glob = [".venv/*", ".github/workflows/*"]
 length_sort = true
 
 [tool.mypy]
-python_version = 3.10
+python_version = 3.12
 follow_imports = "silent"
 ignore_missing_imports = true
 strict = true
@@ -125,3 +125,8 @@ module = "tests.*"
 allow_untyped_defs = true
 allow_incomplete_defs = true
 allow_untyped_calls = true
+
+[tool.ruff.lint]
+# Match historical flake8-oriented checks under ruff 0.16+ defaults.
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]

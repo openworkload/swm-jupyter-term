@@ -1,11 +1,9 @@
 import io
 import os
-import socket
 import typing
 from datetime import datetime
 from queue import Queue
 from tempfile import TemporaryDirectory
-import pwd
 
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
@@ -86,7 +84,7 @@ class SwmSpawner(Spawner):  # type: ignore
             job_script = Template(_file.read())
         job_script_rendered = job_script.render(job_info=job_info)
         self.log.info(f"Job script to submit: \n{job_script_rendered}")
-        return job_script_rendered
+        return str(job_script_rendered)
 
     @property
     def _swm_api(self) -> SwmApi:
@@ -103,7 +101,7 @@ class SwmSpawner(Spawner):  # type: ignore
             ca_file=ca_file,
         )
 
-    def load_state(self, state: typing.Dict[str, typing.Any]) -> None:
+    def load_state(self, state: dict[str, typing.Any]) -> None:
         """Restore state about swm-spawned server after a hub restart."""
         super().load_state(state)
         if "job_id" in state:
@@ -131,7 +129,7 @@ class SwmSpawner(Spawner):  # type: ignore
         self._jupyter_singleuser_ip = "127.0.0.1"
         self._jupyter_singleuser_port = 8888
 
-    async def start(self) -> typing.Optional[tuple[str, int]]:
+    async def start(self) -> tuple[str, int] | None:
         """Start single-user server over SWM."""
         self._swm_job_id = await self._do_submit_rpc()
         self._add_msg(f"Job submitted: {self._swm_job_id}", 1)
@@ -144,13 +142,13 @@ class SwmSpawner(Spawner):  # type: ignore
         self.log.info("Job start waiting finished")
         return self._jupyter_singleuser_ip, self._jupyter_singleuser_port
 
-    async def poll(self) -> typing.Optional[int]:
+    async def poll(self) -> int | None:
         """Poll process to see if it is still running (None: not running, 0 otherwise)."""
         job_state = await self._fetch_job_state()
         if job_state in [JobState.R, JobState.W, JobState.T]:
             return None
         if job_state == JobState.E:
-            self.stop()
+            await self.stop()
             return None
         self.clear_state()
         return 0
@@ -269,9 +267,7 @@ class SwmSpawner(Spawner):  # type: ignore
                         progress = 25
                     elif job.state_details.lower().startswith("start secured tunnel"):
                         progress = 50
-                    elif job.state_details.lower().startswith("sky port connected"):
-                        progress = 70
-                    elif job.state_details.lower().startswith("waiting for sky port port readiness"):
+                    elif job.state_details.lower().startswith("sky port connected") or job.state_details.lower().startswith("waiting for sky port port readiness"):
                         progress = 70
                     elif job.state_details.lower().startswith("data uploaded"):
                         progress = 95
@@ -291,5 +287,5 @@ class SwmSpawner(Spawner):  # type: ignore
     def render_options_form(self) -> str:
         return self._html_form.render(self._swm_api)
 
-    def options_from_form(self, form_data: dict[str, list[dict[str, bytes]]]) -> typing.Dict[str, typing.Any]:
+    def options_from_form(self, form_data: dict[str, list[dict[str, bytes]]]) -> dict[str, typing.Any]:
         return self._html_form.get_options(form_data, self._spool_dir.name)
