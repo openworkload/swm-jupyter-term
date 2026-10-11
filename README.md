@@ -67,6 +67,11 @@ In 7-10 minutes JupyterLab will be started.
 For local demos only, you may set `SWM_JUPYTER_INSECURE_AUTH=1` with a
 loopback bind. Do not use that on a network-facing host.
 
+The release container runs as a non-root user and mounts Sky Port
+`cert.pem` / `key.pem` / CA **read-only** (not a writable `~/.swm` tree).
+Upload names are sanitized into a dedicated spool. Details:
+[HOWTO/SECURITY.md](HOWTO/SECURITY.md).
+
 
 # Contributing
 

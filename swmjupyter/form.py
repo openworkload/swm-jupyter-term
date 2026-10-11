@@ -7,6 +7,8 @@ from jinja2 import Template
 from swmclient.api import SwmApi
 from swmclient.generated.models.resource import Resource
 
+from .upload_paths import UploadPathError, resolve_upload_path
+
 
 @dataclass
 class InstanceType:
@@ -70,8 +72,13 @@ class SwmForm:
             for file_info in form_files:
                 filename = file_info["filename"]
                 content = file_info["body"]
-                file_path: str = spool_dir + "/" + str(filename)
+                try:
+                    file_path = resolve_upload_path(spool_dir, filename)
+                except UploadPathError as exc:
+                    self.log.error(f"Rejected upload file name {filename!r}: {exc}")
+                    raise
                 self.log.debug(f"Save input temporary file: {file_path}, {len(content)}")
-                open(file_path, "wb").write(content)
+                with open(file_path, "wb") as handle:
+                    handle.write(content)
                 result.append(file_path)
         return result

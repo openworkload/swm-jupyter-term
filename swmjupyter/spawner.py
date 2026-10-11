@@ -24,18 +24,29 @@ class SwmSpawner(Spawner):  # type: ignore
     _jupyter_singleuser_port = Integer(8888, help="jupyter server port", config=True)
 
     _swm_port = Integer(8443, help="swm-core user API port", config=True)
-    _swm_host = Unicode(os.getenv("SKYPORT_HOST", "skyport.openworkload.org"), help="swm-core user API host", config=True)
-    _swm_ca_file = Unicode("/opt/swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)
+    _swm_host = Unicode(
+        os.getenv("SKYPORT_HOST", "skyport.openworkload.org"), help="swm-core user API host", config=True
+    )
+    _swm_ca_file = Unicode("~/.swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)
     _swm_key_file = Unicode("~/.swm/key.pem", help="PEM key file path", config=True)
     _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)
+    _upload_root = Unicode(
+        os.environ.get("SWM_JUPYTER_UPLOAD_ROOT", ""),
+        help="Parent directory for per-spawner upload spools",
+        config=True,
+    )
     _swm_job_id = None
 
-    _spool_dir = TemporaryDirectory(prefix=".swmjupyter_")
     _msg_queue: Queue[tuple[str, int]] = Queue()
     _last_msg: str = ""
 
     def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         super().__init__(*args, **kwargs)
+        upload_parent = self._upload_root.strip() or None
+        if upload_parent:
+            os.makedirs(upload_parent, mode=0o700, exist_ok=True)
+        # One spool per spawner instance (never a shared class attribute).
+        self._spool_dir = TemporaryDirectory(prefix=".swmjupyter_", dir=upload_parent)
         self._config = self._read_config()
         self._html_form = SwmForm(self.log)
         self.options_form = self.render_options_form()
@@ -89,9 +100,9 @@ class SwmSpawner(Spawner):  # type: ignore
     @property
     def _swm_api(self) -> SwmApi:
         username = self.user.name
-        key_file = self._swm_key_file.format(username=username)
-        cert_file = self._swm_cert_file.format(username=username)
-        ca_file = self._swm_ca_file.format(username=username)
+        key_file = os.path.expanduser(self._swm_key_file.format(username=username))
+        cert_file = os.path.expanduser(self._swm_cert_file.format(username=username))
+        ca_file = os.path.expanduser(self._swm_ca_file.format(username=username))
         swm_core_addr = f"https://{self._swm_host}:{self._swm_port}"
         self.log.info(f"Sky Port core address: {swm_core_addr}")
         return SwmApi(
@@ -267,7 +278,9 @@ class SwmSpawner(Spawner):  # type: ignore
                         progress = 25
                     elif job.state_details.lower().startswith("start secured tunnel"):
                         progress = 50
-                    elif job.state_details.lower().startswith("sky port connected") or job.state_details.lower().startswith("waiting for sky port port readiness"):
+                    elif job.state_details.lower().startswith(
+                        "sky port connected"
+                    ) or job.state_details.lower().startswith("waiting for sky port port readiness"):
                         progress = 70
                     elif job.state_details.lower().startswith("data uploaded"):
                         progress = 95

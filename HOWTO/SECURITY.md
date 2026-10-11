@@ -51,6 +51,30 @@ export SWM_JUPYTER_BIND_IP=127.0.0.1
 
 The hub refuses insecure Dummy auth when the bind is not loopback.
 
+## Upload files
+
+Spawn form uploads go through `swmjupyter.upload_paths`:
+
+1. The hub keeps only the file basename.
+2. Absolute paths and `..` segments are rejected.
+3. The resolved path must stay under the per-spawner upload spool.
+4. Optional parent: `SWM_JUPYTER_UPLOAD_ROOT` (container default `/var/lib/swmjupyter/uploads`).
+
+## Container user and certificates
+
+The image runs as user `jupyterhub` (non-root).
+
+`start-container.sh` mounts only these host files **read-only**:
+
+| Host path | Container path |
+|-----------|----------------|
+| `~/.swm/cert.pem` | `/home/jupyterhub/.swm/cert.pem` |
+| `~/.swm/key.pem` | `/home/jupyterhub/.swm/key.pem` |
+| `~/.swm/spool/secure/cluster/ca-chain-cert.pem` | `/home/jupyterhub/.swm/spool/secure/cluster/ca-chain-cert.pem` |
+| `~/.swm/jupyter-spawner.conf` (if present) | `/home/jupyterhub/.swm/jupyter-spawner.conf` |
+
+Do not mount the whole `~/.swm` tree as writable data for the hub.
+
 ## Related
 
 - Hub-to-node HTTPS and per-user mTLS are separate hardening items.

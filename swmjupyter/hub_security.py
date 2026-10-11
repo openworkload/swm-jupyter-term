@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Mapping, Optional
 from dataclasses import dataclass
+from typing import Mapping, Optional
 
 
 class HubSecurityError(ValueError):
@@ -85,7 +85,7 @@ def resolve_hub_security(env: Optional[Mapping[str, str]] = None) -> HubSecurity
     bind_ip = (env.get("SWM_JUPYTER_BIND_IP") or "").strip()
     if not bind_ip:
         if _truthy(env.get("SWM_JUPYTER_PUBLISH_ALL")):
-            bind_ip = "0.0.0.0"
+            bind_ip = "0.0.0.0"  # nosec B104
         else:
             bind_ip = "127.0.0.1"
 
@@ -126,7 +126,7 @@ def resolve_hub_security(env: Optional[Mapping[str, str]] = None) -> HubSecurity
             ssl_cert=ssl_cert,
             ssl_key=ssl_key,
             oauth_client_id="",
-            oauth_client_secret="",
+            oauth_client_secret="",  # nosec B106
             oauth_authorize_url="",
             oauth_token_url="",
             oauth_userdata_url="",
@@ -184,7 +184,7 @@ def resolve_hub_security(env: Optional[Mapping[str, str]] = None) -> HubSecurity
         ssl_cert=ssl_cert,
         ssl_key=ssl_key,
         oauth_client_id="",
-        oauth_client_secret="",
+        oauth_client_secret="",  # nosec B106
         oauth_authorize_url="",
         oauth_token_url="",
         oauth_userdata_url="",

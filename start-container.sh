@@ -38,6 +38,7 @@ NETWORK=skyportnet
 CONTAINER_NAME=jupyterhub
 IMAGE_NAME=skyport-jupyterhub
 USER_API_PORT="${SWM_JUPYTER_BIND_PORT:-8000}"
+HUB_HOME=/home/jupyterhub
 # Default: publish only on loopback. Set SWM_JUPYTER_PUBLISH_ALL=1 to bind all interfaces.
 BIND_IP="${SWM_JUPYTER_BIND_IP:-127.0.0.1}"
 if [ "${SWM_JUPYTER_PUBLISH_ALL:-0}" = "1" ]; then
@@ -50,6 +51,19 @@ else
     PUBLISH_ARG="${USER_API_PORT}:${USER_API_PORT}"
 fi
 
+SWM_DIR="${HOME}/.swm"
+CERT_FILE="${SWM_DIR}/cert.pem"
+KEY_FILE="${SWM_DIR}/key.pem"
+CA_FILE="${SWM_DIR}/spool/secure/cluster/ca-chain-cert.pem"
+SPAWNER_CONF="${SWM_DIR}/jupyter-spawner.conf"
+
+for required in "${CERT_FILE}" "${KEY_FILE}" "${CA_FILE}"; do
+    if [ ! -f "${required}" ]; then
+        echo "Missing required Sky Port credential file: ${required}" >&2
+        exit 1
+    fi
+done
+
 RUNNING=$(docker inspect -f '{{.State.Running}}' ${CONTAINER_NAME} 2>/dev/null)
 NOT_RUNNING=$?
 
@@ -60,18 +74,27 @@ else
     echo "Created docker network '${NETWORK}'"
 fi
 
+VOLUME_ARGS=(
+    --volume "${CERT_FILE}:${HUB_HOME}/.swm/cert.pem:ro"
+    --volume "${KEY_FILE}:${HUB_HOME}/.swm/key.pem:ro"
+    --volume "${CA_FILE}:${HUB_HOME}/.swm/spool/secure/cluster/ca-chain-cert.pem:ro"
+)
+if [ -f "${SPAWNER_CONF}" ]; then
+    VOLUME_ARGS+=(--volume "${SPAWNER_CONF}:${HUB_HOME}/.swm/jupyter-spawner.conf:ro")
+fi
+
 if [ "$NOT_RUNNING" != "0" ]; then
     docker run\
         --publish ${PUBLISH_ARG}\
-        --volume $HOME/.swm:/root/.swm\
+        "${VOLUME_ARGS[@]}"\
         --name $CONTAINER_NAME\
         --hostname $CONTAINER_NAME\
         --network-alias $CONTAINER_NAME\
         --domainname $DOMAIN\
-        --workdir ${PWD}\
         --tty\
         --interactive\
         --network $NETWORK\
+        -e HOME="${HUB_HOME}"\
         -e SKYPORT_USER=$(id -u -n)\
         -e SKYPORT_USER_ID=$(id -u)\
         -e SWM_JUPYTER_BIND_IP="${BIND_IP}"\
@@ -79,6 +102,7 @@ if [ "$NOT_RUNNING" != "0" ]; then
         -e SWM_JUPYTER_AUTH="${SWM_JUPYTER_AUTH:-native}"\
         -e SWM_JUPYTER_INSECURE_AUTH="${SWM_JUPYTER_INSECURE_AUTH:-}"\
         -e SWM_JUPYTER_ADMIN_USER="${SWM_JUPYTER_ADMIN_USER:-}"\
+        -e SWM_JUPYTER_UPLOAD_ROOT=/var/lib/swmjupyter/uploads\
         ${IMAGE_NAME}
 
 elif [[ ${RUNNING} = "false" ]]; then
