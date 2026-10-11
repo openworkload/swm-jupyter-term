@@ -31,8 +31,12 @@ make prepare-venv
 
 * Start JupyterHub:
 ```bash
+export SWM_JUPYTER_ADMIN_USER=$USER
 make start
 ```
+
+The public UI binds to `127.0.0.1:8000` by default. See
+[HOWTO/SECURITY.md](HOWTO/SECURITY.md) for OAuth, TLS, and publish options.
 
 ## Run in release mode (in container)
 
@@ -46,13 +50,22 @@ make build-container
 make start-container
 ```
 
-# Usage:
-* Go to [http://localhost:8000](http://localhost:8000) in a web browser.
+# Usage
+
+Authentication is required. The default authenticator is NativeAuthenticator
+(not open Dummy auth). See [HOWTO/SECURITY.md](HOWTO/SECURITY.md).
+
+* Set `SWM_JUPYTER_ADMIN_USER` to your admin login, then start the hub.
+* Open [http://127.0.0.1:8000](http://127.0.0.1:8000) (loopback by default).
+* Sign in with your hub user.
 * Select notebook and other files that will be uploaded (if needed).
-* Select flavor and image for VM machine (use filter if needed).
-* Press "Start" button.
+* Select flavor and image for the VM (use filter if needed).
+* Press **Start**.
 
 In 7-10 minutes JupyterLab will be started.
+
+For local demos only, you may set `SWM_JUPYTER_INSECURE_AUTH=1` with a
+loopback bind. Do not use that on a network-facing host.
 
 
 # Contributing

@@ -30,3 +30,7 @@ jobs:
       run: |
         make prepare-venv
         make check
+    -
+      name: Run unit tests
+      run: |
+        make test

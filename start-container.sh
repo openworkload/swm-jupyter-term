@@ -37,7 +37,18 @@ NETWORK=skyportnet
 
 CONTAINER_NAME=jupyterhub
 IMAGE_NAME=skyport-jupyterhub
-USER_API_PORT=8000
+USER_API_PORT="${SWM_JUPYTER_BIND_PORT:-8000}"
+# Default: publish only on loopback. Set SWM_JUPYTER_PUBLISH_ALL=1 to bind all interfaces.
+BIND_IP="${SWM_JUPYTER_BIND_IP:-127.0.0.1}"
+if [ "${SWM_JUPYTER_PUBLISH_ALL:-0}" = "1" ]; then
+    BIND_IP="0.0.0.0"
+    echo "WARNING: publishing JupyterHub on all interfaces (SWM_JUPYTER_PUBLISH_ALL=1)"
+fi
+if [ "${BIND_IP}" = "127.0.0.1" ] || [ "${BIND_IP}" = "localhost" ] || [ "${BIND_IP}" = "::1" ]; then
+    PUBLISH_ARG="127.0.0.1:${USER_API_PORT}:${USER_API_PORT}"
+else
+    PUBLISH_ARG="${USER_API_PORT}:${USER_API_PORT}"
+fi
 
 RUNNING=$(docker inspect -f '{{.State.Running}}' ${CONTAINER_NAME} 2>/dev/null)
 NOT_RUNNING=$?
@@ -51,7 +62,7 @@ fi
 
 if [ "$NOT_RUNNING" != "0" ]; then
     docker run\
-        --publish $USER_API_PORT:$USER_API_PORT\
+        --publish ${PUBLISH_ARG}\
         --volume $HOME/.swm:/root/.swm\
         --name $CONTAINER_NAME\
         --hostname $CONTAINER_NAME\
@@ -63,6 +74,11 @@ if [ "$NOT_RUNNING" != "0" ]; then
         --network $NETWORK\
         -e SKYPORT_USER=$(id -u -n)\
         -e SKYPORT_USER_ID=$(id -u)\
+        -e SWM_JUPYTER_BIND_IP="${BIND_IP}"\
+        -e SWM_JUPYTER_BIND_PORT="${USER_API_PORT}"\
+        -e SWM_JUPYTER_AUTH="${SWM_JUPYTER_AUTH:-native}"\
+        -e SWM_JUPYTER_INSECURE_AUTH="${SWM_JUPYTER_INSECURE_AUTH:-}"\
+        -e SWM_JUPYTER_ADMIN_USER="${SWM_JUPYTER_ADMIN_USER:-}"\
         ${IMAGE_NAME}
 
 elif [[ ${RUNNING} = "false" ]]; then

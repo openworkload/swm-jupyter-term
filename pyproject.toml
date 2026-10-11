@@ -36,6 +36,8 @@ requires-python = "~=3.12"
 dependencies = [
     "jinja2",
     "jupyterhub",
+    "jupyterhub-nativeauthenticator",
+    "oauthenticator",
     "jupyterlab",
     "swmclient >= 0.1.5",
 ]

@@ -9,5 +9,7 @@ wheel
 
 jinja2
 jupyterhub
+jupyterhub-nativeauthenticator
+oauthenticator
 jupyterlab
 swmclient >= 0.1.7

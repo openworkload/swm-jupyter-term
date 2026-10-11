@@ -60,10 +60,13 @@ upload:
 
 .PHONY: test
 test:
-	@mods="$(wildcard test*.py)"; 	if [ -n "$$mods" ]; then ${RUNTEST} $$mods; else echo "No unit test modules found"; fi
+	. $(VENV_BIN)/activate
+	@mods="$(wildcard test*.py)"; \
+	if [ -n "$$mods" ]; then $(RUNTEST) $$mods; else echo "No unit test modules found"; exit 1; fi
 
 % : test%.py
-	${RUNTEST} test$@
+	. $(VENV_BIN)/activate
+	$(RUNTEST) test$@.py
 
 .PHONY: update-client-package
 update-client-package:
