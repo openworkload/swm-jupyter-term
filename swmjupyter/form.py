@@ -7,6 +7,7 @@ from jinja2 import Template
 from swmclient.api import SwmApi
 from swmclient.generated.models.resource import Resource
 
+from .form_options import FormOptionError, sanitize_cloud_image, sanitize_flavor, sanitize_gpus
 from .upload_paths import UploadPathError, resolve_upload_path
 
 
@@ -60,9 +61,13 @@ class SwmForm:
         input_files: list[dict[str, bytes]] = form_data.get("files[]_file", [])
         options["input_files"] = self._save_tmp_input_files(input_files, spool_dir)
         options["output_files"] = [os.path.basename(file_path) for file_path in options["input_files"]]
-        options["flavor"] = form_data["selected_flavor_name"][0]
-        options["gpus"] = form_data["selected_flavor_gpus"][0]
-        options["cloud-image"] = form_data["selected_cloud_image_name"][0]
+        try:
+            options["flavor"] = sanitize_flavor(form_data["selected_flavor_name"][0])
+            options["gpus"] = sanitize_gpus(form_data["selected_flavor_gpus"][0])
+            options["cloud-image"] = sanitize_cloud_image(form_data["selected_cloud_image_name"][0])
+        except FormOptionError as exc:
+            self.log.error(f"Rejected spawn form option: {exc}")
+            raise
         self.log.debug(f"Parsed options: {options}")
         return options
 

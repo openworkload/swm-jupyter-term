@@ -5,7 +5,7 @@ from datetime import datetime
 from queue import Queue
 from tempfile import TemporaryDirectory
 
-from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from jupyterhub.spawner import Spawner
 from swmclient.api import SwmApi
 from swmclient.generated.models.job_state import JobState
@@ -13,6 +13,7 @@ from tornado import gen
 from traitlets import Integer, Unicode
 
 from .form import SwmForm
+from .form_options import swm_directive_token
 
 # Staged into the job directory via #SWM input-files (must match upload_paths rules).
 HUB_API_TOKEN_FILENAME = "jupyterhub_api_token"
@@ -116,9 +117,12 @@ class SwmSpawner(Spawner):  # type: ignore
             "output_files": self.user_options.get("output_files") or [],
             "storage": self._config.get("storage", "swmblobcontainer"),
         }
-        with open(os.path.dirname(__file__) + "/job.sh.jinja") as _file:
-            job_script = Template(_file.read())
-        job_script_rendered = str(job_script.render(job_info=job_info))
+        jinja_env = Environment(
+            loader=FileSystemLoader(os.path.dirname(__file__)),
+            autoescape=select_autoescape(enabled_extensions=()),
+        )
+        jinja_env.filters["swm_token"] = swm_directive_token
+        job_script_rendered = str(jinja_env.get_template("job.sh.jinja").render(job_info=job_info))
         self.log.info(summarize_job_script_for_log(job_script_rendered, api_token))
         if api_token and api_token in job_script_rendered:
             self.log.error("Hub API token unexpectedly present in rendered job script")

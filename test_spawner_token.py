@@ -9,8 +9,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from swmjupyter.form_options import swm_directive_token
 from swmjupyter.spawner import (
     HUB_API_TOKEN_FILENAME,
     summarize_job_script_for_log,
@@ -60,7 +61,12 @@ class TestJobScriptTemplateNoToken(unittest.TestCase):
             "output_files": [],
             "storage": "swmblobcontainer",
         }
-        rendered = Template(template_path.read_text(encoding="utf-8")).render(job_info=job_info)
+        env = Environment(
+            loader=FileSystemLoader(str(template_path.parent)),
+            autoescape=select_autoescape(enabled_extensions=()),
+        )
+        env.filters["swm_token"] = swm_directive_token
+        rendered = env.get_template(template_path.name).render(job_info=job_info)
         self.assertNotIn(SECRET, rendered)
         self.assertNotIn(f"JUPYTERHUB_API_TOKEN={SECRET}", rendered)
         self.assertNotRegex(rendered, r"export JUPYTERHUB_API_TOKEN=[^\s$]+")

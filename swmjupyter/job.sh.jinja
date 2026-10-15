@@ -4,15 +4,15 @@
 # The script is used to start JupyterHub user server.
 
 #SWM relocatable
-#SWM flavor {{ job_info["flavor"] }}
+#SWM flavor {{ job_info["flavor"] | swm_token }}
 #SWM ports {{ job_info["ports"] }}
 #SWM account {{ job_info["account"] }}
-#SWM cloud-image {{ job_info["cloud_image_name"] }}
+#SWM cloud-image {{ job_info["cloud_image_name"] | swm_token }}
 #SWM container-image {{ job_info["container_registry"] }}/{{ job_info["container_image_name"] }}:{{ job_info["container_image_tag"] }}
 #SWM input-files {{ " ".join(job_info["input_files"]) }}
 #SWM output-files {{ " ".join(job_info["output_files"]) }}
 #SWM storage {{ job_info["storage"] }}
-#SWM gpus {{ job_info["gpus"] }}
+#SWM gpus {{ job_info["gpus"] | swm_token }}
 
 export HOME=$(pwd)
 export XDG_CACHE_HOME=${HOME}/.cache/
