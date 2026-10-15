@@ -14,6 +14,7 @@ from traitlets import Integer, Unicode
 
 from .form import SwmForm
 from .form_options import swm_directive_token
+from .user_certs import UserCertError, resolve_user_cert_paths
 
 # Staged into the job directory via #SWM input-files (must match upload_paths rules).
 HUB_API_TOKEN_FILENAME = "jupyterhub_api_token"  # nosec B105  # spool basename, not a password
@@ -49,9 +50,11 @@ class SwmSpawner(Spawner):  # type: ignore
     _swm_host = Unicode(
         os.getenv("SKYPORT_HOST", "skyport.openworkload.org"), help="swm-core user API host", config=True
     )
-    _swm_ca_file = Unicode("~/.swm/spool/secure/cluster/ca-chain-cert.pem", help="CA file path", config=True)
-    _swm_key_file = Unicode("~/.swm/key.pem", help="PEM key file path", config=True)
-    _swm_cert_file = Unicode("~/.swm/cert.pem", help="PEM certificate file path", config=True)
+    _swm_ca_file = Unicode(
+        "",
+        help="Optional CA override (default: <hub-user-home>/.swm/spool/secure/cluster/ca-chain-cert.pem)",
+        config=True,
+    )
     _upload_root = Unicode(
         os.environ.get("SWM_JUPYTER_UPLOAD_ROOT", ""),
         help="Parent directory for per-spawner upload spools",
@@ -132,16 +135,26 @@ class SwmSpawner(Spawner):  # type: ignore
     @property
     def _swm_api(self) -> SwmApi:
         username = self.user.name
-        key_file = os.path.expanduser(self._swm_key_file.format(username=username))
-        cert_file = os.path.expanduser(self._swm_cert_file.format(username=username))
-        ca_file = os.path.expanduser(self._swm_ca_file.format(username=username))
+        ca_override = (self._swm_ca_file or "").strip() or os.environ.get("SWM_JUPYTER_CA_FILE") or None
+        if ca_override:
+            ca_override = os.path.expanduser(ca_override)
+        try:
+            paths = resolve_user_cert_paths(username, ca_file=ca_override)
+        except UserCertError as exc:
+            self.log.error("Sky Port mTLS identity for %s: %s", username, exc)
+            raise
         swm_core_addr = f"https://{self._swm_host}:{self._swm_port}"
-        self.log.info(f"Sky Port core address: {swm_core_addr}")
+        self.log.info(
+            "Sky Port core address: %s (mTLS user=%s home=%s)",
+            swm_core_addr,
+            username,
+            paths.home_dir,
+        )
         return SwmApi(
             url=swm_core_addr,
-            key_file=key_file,
-            cert_file=cert_file,
-            ca_file=ca_file,
+            key_file=paths.key_file,
+            cert_file=paths.cert_file,
+            ca_file=paths.ca_file,
         )
 
     def load_state(self, state: dict[str, typing.Any]) -> None:

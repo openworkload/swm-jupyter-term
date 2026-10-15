@@ -29,14 +29,16 @@ The spawner python package is distributed via PyPI: [swmjupyter](https://pypi.or
 make prepare-venv
 ```
 
-* Start JupyterHub:
+* Start JupyterHub (hub login must match your system username; that account
+  needs `~/.swm/cert.pem` and `key.pem`):
 ```bash
 export SWM_JUPYTER_ADMIN_USER=$USER
 make start
 ```
 
 The public UI binds to `127.0.0.1:8000` by default. See
-[HOWTO/SECURITY.md](HOWTO/SECURITY.md) for OAuth, TLS, and publish options.
+[HOWTO/SECURITY.md](HOWTO/SECURITY.md) for OAuth, TLS, per-user mTLS, and
+publish options.
 
 ## Run in release mode (in container)
 
@@ -67,10 +69,10 @@ In 7-10 minutes JupyterLab will be started.
 For local demos only, you may set `SWM_JUPYTER_INSECURE_AUTH=1` with a
 loopback bind. Do not use that on a network-facing host.
 
-The release container runs as a non-root user and mounts Sky Port
-`cert.pem` / `key.pem` / CA **read-only** (not a writable `~/.swm` tree).
-Upload names are sanitized into a dedicated spool. Details:
-[HOWTO/SECURITY.md](HOWTO/SECURITY.md).
+The release container runs as non-root `jupyterhub` and mounts that user's
+Sky Port `cert.pem` / `key.pem` / CA **read-only**. Log in to the hub as
+`jupyterhub` so the system-user mTLS mapping matches. Upload names are
+sanitized into a dedicated spool. Details: [HOWTO/SECURITY.md](HOWTO/SECURITY.md).
 
 
 # Contributing

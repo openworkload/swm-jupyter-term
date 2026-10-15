@@ -51,6 +51,8 @@ else
     PUBLISH_ARG="${USER_API_PORT}:${USER_API_PORT}"
 fi
 
+# Single-user container demo: hub login must be "jupyterhub" (the image USER).
+# mTLS uses /home/jupyterhub/.swm/{cert,key}.pem inside the container.
 SWM_DIR="${HOME}/.swm"
 CERT_FILE="${SWM_DIR}/cert.pem"
 KEY_FILE="${SWM_DIR}/key.pem"
@@ -60,6 +62,7 @@ SPAWNER_CONF="${SWM_DIR}/jupyter-spawner.conf"
 for required in "${CERT_FILE}" "${KEY_FILE}" "${CA_FILE}"; do
     if [ ! -f "${required}" ]; then
         echo "Missing required Sky Port credential file: ${required}" >&2
+        echo "Install per-user certs under ~/.swm/ (hub login must match system user jupyterhub)." >&2
         exit 1
     fi
 done
@@ -101,7 +104,7 @@ if [ "$NOT_RUNNING" != "0" ]; then
         -e SWM_JUPYTER_BIND_PORT="${USER_API_PORT}"\
         -e SWM_JUPYTER_AUTH="${SWM_JUPYTER_AUTH:-native}"\
         -e SWM_JUPYTER_INSECURE_AUTH="${SWM_JUPYTER_INSECURE_AUTH:-}"\
-        -e SWM_JUPYTER_ADMIN_USER="${SWM_JUPYTER_ADMIN_USER:-}"\
+        -e SWM_JUPYTER_ADMIN_USER="${SWM_JUPYTER_ADMIN_USER:-jupyterhub}"\
         -e SWM_JUPYTER_UPLOAD_ROOT=/var/lib/swmjupyter/uploads\
         ${IMAGE_NAME}
 

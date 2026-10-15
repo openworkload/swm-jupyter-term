@@ -15,9 +15,11 @@ Always keep `allow_all` false except the insecure lab mode above.
 ### Create the first admin (native)
 
 1. Set `SWM_JUPYTER_ADMIN_USER` to the admin login name.
-2. Start the hub.
-3. Open `http://127.0.0.1:8000` and sign up / set the password for that admin (NativeAuthenticator flow).
-4. Create other users as the admin. Do not enable open signup in production.
+2. Ensure a **system account** with that same name exists (see per-user mTLS below).
+3. Start the hub.
+4. Open `http://127.0.0.1:8000` and sign up / set the password for that admin (NativeAuthenticator flow).
+5. Create other users as the admin. Do not enable open signup in production.
+6. Each hub login must also exist as a system user with Sky Port client certs installed.
 
 ## Bind address and Docker publish
 
@@ -51,6 +53,49 @@ export SWM_JUPYTER_BIND_IP=127.0.0.1
 
 The hub refuses insecure Dummy auth when the bind is not loopback.
 
+## Per-user mTLS toward swm-core
+
+Each JupyterHub login name must match a **local system user**. The spawner loads
+that user's client certificate from the standard Sky Port paths:
+
+| File | Path |
+|------|------|
+| Client cert | `$HOME/.swm/cert.pem` |
+| Client key | `$HOME/.swm/key.pem` |
+| CA chain | `$HOME/.swm/spool/secure/cluster/ca-chain-cert.pem` |
+
+Optional CA override for all users: set `SWM_JUPYTER_CA_FILE` or
+`c.SwmSpawner._swm_ca_file` to a readable CA chain path.
+
+If the system user is missing, or the cert/key/CA file is missing or not
+readable by the hub process, form render and job submit **fail**. There is no
+fallback to a shared operator certificate.
+
+### Provision one hub user
+
+1. Create a system account whose name equals the JupyterHub login.
+2. Create the SWM user with a fixed UUID: `swmctl user create <name> <uuid>`.
+3. Issue a matching user cert: `swm-create-cert user <name> <uuid>`
+   (do not use `swmctl user cert create`; it is unimplemented).
+4. Install into that account's home:
+
+```bash
+install -d -m 0700 ~<name>/.swm/spool/secure/cluster
+install -m 0644 $SWM_SPOOL/secure/users/<name>/cert.pem ~<name>/.swm/cert.pem
+install -m 0600 $SWM_SPOOL/secure/users/<name>/key.pem ~<name>/.swm/key.pem
+install -m 0644 $SWM_SPOOL/secure/cluster/ca-chain-cert.pem \
+  ~<name>/.swm/spool/secure/cluster/ca-chain-cert.pem
+```
+
+5. Add the SWM user to the job account (`users` or `admins`).
+6. Ensure the hub process can read the key (same uid, shared group with mode
+   `0640`, or ACL). Private keys must not be world-readable.
+7. Create the matching JupyterHub user (NativeAuthenticator / OAuth name).
+
+swm-core maps identity from the cert UUID to the SWM user row (not from the
+CN). The UUID in the cert must match the SWM user id. Do not give end users
+the admin ACL certificate.
+
 ## Upload files
 
 Spawn form uploads go through `swmjupyter.upload_paths`:
@@ -71,15 +116,12 @@ The JupyterHub server API token is **not** written into the job script body
 Hub logs must not contain the raw token. The spawner logs only a length summary
 and a redacted script copy.
 
-Sky Port owner checks (swm-core) limit who can show a job when callers use
-distinct identities. Hub users that still share one mTLS client certificate
-toward swm-core are not fully isolated until per-user certificates are in place.
-
 ## Container user and certificates
 
 The image runs as user `jupyterhub` (non-root).
 
-`start-container.sh` mounts only these host files **read-only**:
+For a single-user container demo, log in to the hub as `jupyterhub` and mount
+that account's Sky Port files **read-only**:
 
 | Host path | Container path |
 |-----------|----------------|
@@ -88,9 +130,11 @@ The image runs as user `jupyterhub` (non-root).
 | `~/.swm/spool/secure/cluster/ca-chain-cert.pem` | `/home/jupyterhub/.swm/spool/secure/cluster/ca-chain-cert.pem` |
 | `~/.swm/jupyter-spawner.conf` (if present) | `/home/jupyterhub/.swm/jupyter-spawner.conf` |
 
-Do not mount the whole `~/.swm` tree as writable data for the hub.
+Multi-user containers need a system account per hub login and a mount (or
+copy) of each user's `~/.swm` into that account's home. Do not mount the whole
+operator `~/.swm` tree as writable data for the hub.
 
 ## Related
 
-- Hub-to-node HTTPS and per-user mTLS are separate hardening items.
+- Hub-to-node HTTPS is a separate hardening item (issue 32).
 - Sky Port trust model: swm-core `HOWTO/SECURITY.md`

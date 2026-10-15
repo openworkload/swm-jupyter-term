@@ -51,9 +51,10 @@ if _security.insecure_auth and _security.authenticator_class == AUTHENTICATOR_DU
 c.JupyterHub.oauth_token_expires_in = 3600
 c.JupyterHub.tornado_settings = {"slow_spawn_timeout": 0}
 
-c.SwmSpawner._swm_ca_file = "~/.swm/spool/secure/cluster/ca-chain-cert.pem"
-c.SwmSpawner._swm_key_file = "~/.swm/key.pem"
-c.SwmSpawner._swm_cert_file = "~/.swm/cert.pem"
+# mTLS client identity: hub login name must match a system user; certs are
+# <that-user-home>/.swm/{cert,key}.pem (see swmjupyter.user_certs).
+# Optional shared CA override:
+# c.SwmSpawner._swm_ca_file = "/path/to/ca-chain-cert.pem"
 c.SwmSpawner.start_timeout = 1800
 c.SwmSpawner.http_timeout = 60
 c.SwmSpawner.debug = os.environ.get("SWM_JUPYTER_SPAWNER_DEBUG", "").lower() in {
