@@ -1,0 +1,7 @@
+# Local act uses Podman (DOCKER_HOST via scripts/run-act.sh / make act), not Docker Engine.
+#
+# Jobs without `container:` need an explicit runner image. Use the act Ubuntu
+# image (includes Node for JS actions like setup-python); plain ubuntu:24.04
+# fails with "node: not found".
+-P ubuntu-24.04=catthehacker/ubuntu:act-24.04
+--network bridge

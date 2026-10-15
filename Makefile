@@ -64,6 +64,10 @@ test:
 	@mods="$(wildcard test*.py)"; \
 	if [ -n "$$mods" ]; then $(RUNTEST) $$mods; else echo "No unit test modules found"; exit 1; fi
 
+.PHONY: act
+act:
+	scripts/run-act.sh $(ARGS)
+
 % : test%.py
 	. $(VENV_BIN)/activate
 	$(RUNTEST) test$@.py
