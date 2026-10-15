@@ -16,7 +16,7 @@ from .form import SwmForm
 from .form_options import swm_directive_token
 
 # Staged into the job directory via #SWM input-files (must match upload_paths rules).
-HUB_API_TOKEN_FILENAME = "jupyterhub_api_token"
+HUB_API_TOKEN_FILENAME = "jupyterhub_api_token"  # nosec B105  # spool basename, not a password
 
 
 def write_hub_api_token_file(spool_dir: str, token: str) -> str:
@@ -332,5 +332,5 @@ class SwmSpawner(Spawner):  # type: ignore
     def render_options_form(self) -> str:
         return self._html_form.render(self._swm_api)
 
-    def options_from_form(self, form_data: dict[str, list[dict[str, bytes]]]) -> dict[str, typing.Any]:
+    def options_from_form(self, form_data: dict[str, list[typing.Any]]) -> dict[str, typing.Any]:
         return self._html_form.get_options(form_data, self._spool_dir.name)
