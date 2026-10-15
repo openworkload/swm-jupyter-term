@@ -60,6 +60,21 @@ Spawn form uploads go through `swmjupyter.upload_paths`:
 3. The resolved path must stay under the per-spawner upload spool.
 4. Optional parent: `SWM_JUPYTER_UPLOAD_ROOT` (container default `/var/lib/swmjupyter/uploads`).
 
+## Hub API token delivery
+
+The JupyterHub server API token is **not** written into the job script body
+(`script_content`). The spawner writes it to a mode-`0600` file named
+`jupyterhub_api_token` in the upload spool and lists that path in
+`#SWM input-files`. On the node, the job script reads the file into
+`JUPYTERHUB_API_TOKEN` and removes it.
+
+Hub logs must not contain the raw token. The spawner logs only a length summary
+and a redacted script copy.
+
+Sky Port owner checks (swm-core) limit who can show a job when callers use
+distinct identities. Hub users that still share one mTLS client certificate
+toward swm-core are not fully isolated until per-user certificates are in place.
+
 ## Container user and certificates
 
 The image runs as user `jupyterhub` (non-root).

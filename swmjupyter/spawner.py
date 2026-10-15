@@ -14,6 +14,27 @@ from traitlets import Integer, Unicode
 
 from .form import SwmForm
 
+# Staged into the job directory via #SWM input-files (must match upload_paths rules).
+HUB_API_TOKEN_FILENAME = "jupyterhub_api_token"
+
+
+def write_hub_api_token_file(spool_dir: str, token: str) -> str:
+    """Write the Hub API token to a mode-0600 file under the upload spool."""
+    path = os.path.join(spool_dir, HUB_API_TOKEN_FILENAME)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        os.write(fd, token.encode("utf-8"))
+    finally:
+        os.close(fd)
+    os.chmod(path, 0o600)
+    return path
+
+
+def summarize_job_script_for_log(script: str, token: str) -> str:
+    """Return a log line for the job script without exposing the Hub API token."""
+    body = script.replace(token, "***") if token else script
+    return f"Job script to submit ({len(script)} bytes):\n{body}"
+
 
 class SwmSpawner(Spawner):  # type: ignore
 
@@ -71,10 +92,15 @@ class SwmSpawner(Spawner):  # type: ignore
 
     def _render_job_script(self) -> str:
         env = self.get_env()
+        api_token = env["JUPYTERHUB_API_TOKEN"]
+        token_path = write_hub_api_token_file(self._spool_dir.name, api_token)
+        input_files = list(self.user_options.get("input_files") or [])
+        input_files.append(token_path)
+
         jupyterhub_port = self._config.get("jupyterhub_port", self._jupyterhub_port)
         jupyterhub_host = self._config.get("jupyterhub_host", self._jupyterhub_host)
         jupyter_singleuser_port = self._config.get("jupyter_singleuser_port", self._jupyter_singleuser_port)
-        job_info: dict[str, str | int] = {
+        job_info: dict[str, str | int | list[str]] = {
             "account": self._config.get("account", "openstack"),
             "container_registry": self._config.get("container_registry", "swmregistry.azurecr.io"),
             "container_image_name": self._config.get("container_image_name", "jupyter/pytorch-notebook"),
@@ -84,18 +110,20 @@ class SwmSpawner(Spawner):  # type: ignore
             "flavor": self.user_options["flavor"],
             "gpus": self.user_options["gpus"],
             "ports": f"{jupyter_singleuser_port}/tcp/in,{jupyterhub_port}/tcp/out",
-            "jupyterhub_api_token": env["JUPYTERHUB_API_TOKEN"],
             "jupyterhub_client_id": env["JUPYTERHUB_CLIENT_ID"],
             "hub_url": f"http://{jupyterhub_host}:{jupyterhub_port}/hub/api",
-            "input_files": self.user_options["input_files"],
-            "output_files": self.user_options["output_files"],
+            "input_files": input_files,
+            "output_files": self.user_options.get("output_files") or [],
             "storage": self._config.get("storage", "swmblobcontainer"),
         }
         with open(os.path.dirname(__file__) + "/job.sh.jinja") as _file:
             job_script = Template(_file.read())
-        job_script_rendered = job_script.render(job_info=job_info)
-        self.log.info(f"Job script to submit: \n{job_script_rendered}")
-        return str(job_script_rendered)
+        job_script_rendered = str(job_script.render(job_info=job_info))
+        self.log.info(summarize_job_script_for_log(job_script_rendered, api_token))
+        if api_token and api_token in job_script_rendered:
+            self.log.error("Hub API token unexpectedly present in rendered job script")
+            raise RuntimeError("Hub API token must not appear in the job script")
+        return job_script_rendered
 
     @property
     def _swm_api(self) -> SwmApi:

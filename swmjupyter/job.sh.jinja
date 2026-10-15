@@ -16,7 +16,13 @@
 
 export HOME=$(pwd)
 export XDG_CACHE_HOME=${HOME}/.cache/
-export JUPYTERHUB_API_TOKEN={{ job_info["jupyterhub_api_token"] }}
+TOKEN_FILE=jupyterhub_api_token
+if [ ! -f "$TOKEN_FILE" ]; then
+  echo "Missing $TOKEN_FILE (expected via #SWM input-files)" >&2
+  exit 1
+fi
+export JUPYTERHUB_API_TOKEN=$(cat "$TOKEN_FILE")
+rm -f "$TOKEN_FILE"
 export JUPYTERHUB_CLIENT_ID={{ job_info["jupyterhub_client_id"] }}
 export JUPYTERHUB_API_URL={{ job_info["hub_url"] }}
 export JUPYTER_RUNTIME_DIR=/tmp
