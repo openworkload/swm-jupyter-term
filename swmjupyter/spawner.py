@@ -1,5 +1,6 @@
 import io
 import os
+import shutil
 import typing
 from datetime import datetime
 from queue import Queue
@@ -14,10 +15,14 @@ from traitlets import Integer, Unicode
 
 from .form import SwmForm
 from .form_options import swm_directive_token
+from .tcp_forward import LocalTcpForward
 from .user_certs import UserCertError, resolve_user_cert_paths
 
 # Staged into the job directory via #SWM input-files (must match upload_paths rules).
 HUB_API_TOKEN_FILENAME = "jupyterhub_api_token"  # nosec B105  # spool basename, not a password
+SSL_KEY_FILENAME = "jupyterhub_ssl_key.pem"
+SSL_CERT_FILENAME = "jupyterhub_ssl_cert.pem"
+SSL_CA_FILENAME = "jupyterhub_ssl_ca.pem"
 
 
 def write_hub_api_token_file(spool_dir: str, token: str) -> str:
@@ -30,6 +35,14 @@ def write_hub_api_token_file(spool_dir: str, token: str) -> str:
         os.close(fd)
     os.chmod(path, 0o600)
     return path
+
+
+def stage_ssl_file(spool_dir: str, src_path: str, dest_name: str, mode: int = 0o600) -> str:
+    """Copy an internal-SSL PEM into the upload spool under a safe basename."""
+    dest = os.path.join(spool_dir, dest_name)
+    shutil.copyfile(src_path, dest)
+    os.chmod(dest, mode)
+    return dest
 
 
 def summarize_job_script_for_log(script: str, token: str) -> str:
@@ -75,6 +88,10 @@ class SwmSpawner(Spawner):  # type: ignore
         self._config = self._read_config()
         self._html_form = SwmForm(self.log)
         self.options_form = self.render_options_form()
+        self._tcp_forward: LocalTcpForward | None = None
+        self._staged_ssl_paths: dict[str, str] = {}
+        self._jupyter_singleuser_ip = "127.0.0.1"
+        self._remote_node_ip = ""
 
     def _read_config(self) -> dict[str, str]:
         config: dict[str, str] = {}
@@ -94,6 +111,21 @@ class SwmSpawner(Spawner):  # type: ignore
         self.log.info(f"Configuration from {self._config_file}: {config}")
         return config
 
+    async def move_certs(self, paths: dict[str, str]) -> dict[str, str]:
+        """Stage JupyterHub internal SSL PEMs into the upload spool for the job."""
+        spool = self._spool_dir.name
+        key_dest = stage_ssl_file(spool, paths["keyfile"], SSL_KEY_FILENAME, 0o600)
+        cert_dest = stage_ssl_file(spool, paths["certfile"], SSL_CERT_FILENAME, 0o644)
+        ca_dest = stage_ssl_file(spool, paths["cafile"], SSL_CA_FILENAME, 0o644)
+        self._staged_ssl_paths = {
+            "keyfile": key_dest,
+            "certfile": cert_dest,
+            "cafile": ca_dest,
+        }
+        self.log.info("Staged internal SSL certs into upload spool for %s", self.user.name)
+        # Paths remain hub-local; remote job uses basenames after #SWM input-files.
+        return dict(self._staged_ssl_paths)
+
     def _render_job_script(self) -> str:
         env = self.get_env()
         api_token = env["JUPYTERHUB_API_TOKEN"]
@@ -101,10 +133,24 @@ class SwmSpawner(Spawner):  # type: ignore
         input_files = list(self.user_options.get("input_files") or [])
         input_files.append(token_path)
 
+        use_ssl = bool(self.internal_ssl)
+        if use_ssl:
+            if not self._staged_ssl_paths:
+                raise RuntimeError("internal_ssl is enabled but SSL certs were not staged via move_certs")
+            input_files.extend(
+                [
+                    self._staged_ssl_paths["keyfile"],
+                    self._staged_ssl_paths["certfile"],
+                    self._staged_ssl_paths["cafile"],
+                ]
+            )
+
         jupyterhub_port = self._config.get("jupyterhub_port", self._jupyterhub_port)
         jupyterhub_host = self._config.get("jupyterhub_host", self._jupyterhub_host)
         jupyter_singleuser_port = self._config.get("jupyter_singleuser_port", self._jupyter_singleuser_port)
-        job_info: dict[str, str | int | list[str]] = {
+        hub_scheme = "https" if use_ssl else "http"
+        service_scheme = "https" if use_ssl else "http"
+        job_info: dict[str, str | int | list[str] | bool] = {
             "account": self._config.get("account", "openstack"),
             "container_registry": self._config.get("container_registry", "swmregistry.azurecr.io"),
             "container_image_name": self._config.get("container_image_name", "jupyter/pytorch-notebook"),
@@ -115,7 +161,12 @@ class SwmSpawner(Spawner):  # type: ignore
             "gpus": self.user_options["gpus"],
             "ports": f"{jupyter_singleuser_port}/tcp/in,{jupyterhub_port}/tcp/out",
             "jupyterhub_client_id": env["JUPYTERHUB_CLIENT_ID"],
-            "hub_url": f"http://{jupyterhub_host}:{jupyterhub_port}/hub/api",
+            "hub_url": f"{hub_scheme}://{jupyterhub_host}:{jupyterhub_port}/hub/api",
+            "service_scheme": service_scheme,
+            "internal_ssl": use_ssl,
+            "ssl_key_file": SSL_KEY_FILENAME,
+            "ssl_cert_file": SSL_CERT_FILENAME,
+            "ssl_ca_file": SSL_CA_FILENAME,
             "input_files": input_files,
             "output_files": self.user_options.get("output_files") or [],
             "storage": self._config.get("storage", "swmblobcontainer"),
@@ -163,6 +214,7 @@ class SwmSpawner(Spawner):  # type: ignore
         if "job_id" in state:
             self._swm_job_id = state["job_id"]
         if "remote_ip" in state:
+            self._remote_node_ip = state["remote_ip"]
             self.remote_ip = state["remote_ip"]
         if "remote_port" in state:
             self._jupyter_singleuser_port = state["remote_port"]
@@ -172,18 +224,41 @@ class SwmSpawner(Spawner):  # type: ignore
         state = super().get_state()
         if self._swm_job_id:
             state["job_id"] = self._swm_job_id
-        if self._jupyter_singleuser_ip:
+        if self._remote_node_ip:
+            state["remote_ip"] = self._remote_node_ip
+        elif self._jupyter_singleuser_ip:
             state["remote_ip"] = self._jupyter_singleuser_ip
         if self._jupyter_singleuser_port:
             state["remote_port"] = self._jupyter_singleuser_port
         return state
 
+    def _stop_tcp_forward(self) -> None:
+        if self._tcp_forward is not None:
+            self._tcp_forward.stop()
+            self._tcp_forward = None
+
     def clear_state(self) -> None:
         """Clear stored state about this spawner."""
+        self._stop_tcp_forward()
         super().clear_state()
         self._swm_job_id = ""
         self._jupyter_singleuser_ip = "127.0.0.1"
+        self._remote_node_ip = ""
         self._jupyter_singleuser_port = 8888
+        self._staged_ssl_paths = {}
+
+    def _start_localhost_forward(self, remote_ip: str, remote_port: int) -> tuple[str, int]:
+        self._stop_tcp_forward()
+        forward = LocalTcpForward(remote_ip, remote_port)
+        local_port = forward.start()
+        self._tcp_forward = forward
+        self.log.info(
+            "Hub will connect via 127.0.0.1:%s (forward to %s:%s) for internal SSL",
+            local_port,
+            remote_ip,
+            remote_port,
+        )
+        return "127.0.0.1", local_port
 
     async def start(self) -> tuple[str, int] | None:
         """Start single-user server over SWM."""
@@ -196,7 +271,12 @@ class SwmSpawner(Spawner):  # type: ignore
 
         await self._wait_job_start()
         self.log.info("Job start waiting finished")
-        return self._jupyter_singleuser_ip, self._jupyter_singleuser_port
+
+        remote_ip = self._remote_node_ip or self._jupyter_singleuser_ip
+        remote_port = int(self._jupyter_singleuser_port)
+        if self.internal_ssl and remote_ip:
+            return self._start_localhost_forward(remote_ip, remote_port)
+        return remote_ip, remote_port
 
     async def poll(self) -> int | None:
         """Poll process to see if it is still running (None: not running, 0 otherwise)."""
@@ -278,8 +358,9 @@ class SwmSpawner(Spawner):  # type: ignore
                 self.log.debug(f"Fetched job state: {job.state!s}")
                 if job.state == JobState.R:
                     if job.node_ips:
-                        self._jupyter_singleuser_ip = job.node_ips[0]
-                        msg = f"Job is running (IP: {self._jupyter_singleuser_ip}): {job.state_details}"
+                        self._remote_node_ip = job.node_ips[0]
+                        self._jupyter_singleuser_ip = self._remote_node_ip
+                        msg = f"Job is running (IP: {self._remote_node_ip}): {job.state_details}"
                         self.log.debug(msg)
                         self._add_msg(msg, 99)
                     else:

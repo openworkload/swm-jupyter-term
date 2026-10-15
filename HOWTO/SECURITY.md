@@ -41,6 +41,30 @@ For production access from other hosts:
 
 Production mode refuses a non-loopback bind when TLS files are missing.
 
+## Hub-to-node HTTPS (internal SSL)
+
+Traffic between the hub and single-user servers uses JupyterHub **internal SSL**
+(mutual TLS) by default.
+
+| Variable | Default | Role |
+|----------|---------|------|
+| `SWM_JUPYTER_INTERNAL_SSL` | on | Set to `0` only on a loopback bind (lab HTTP) |
+| `SWM_JUPYTER_HUB_CONNECT_HOST` | `localhost` | Hostname singleusers use in `JUPYTERHUB_API_URL` (added as hub cert SAN) |
+| `SWM_JUPYTER_TRUSTED_ALT_NAMES` | unset | Extra comma-separated SANs (`DNS:…`, `IP:…`) |
+
+When internal SSL is on:
+
+1. JupyterHub issues per-spawn Certipy certificates (localhost SANs).
+2. The spawner copies key/cert/CA into the upload spool and lists them in
+   `#SWM input-files` next to the Hub API token.
+3. The job script sets `JUPYTERHUB_SSL_*` and uses `https://` for the service URL
+   and hub API URL.
+4. After the VM IP is known, the spawner opens a localhost TCP forward and the
+   hub connects to `127.0.0.1` so hostname verification matches the cert SANs
+   (TLS still terminates on the node).
+
+Non-loopback hosts cannot disable internal SSL.
+
 ## Insecure lab mode
 
 Use only on a trusted machine:
@@ -136,5 +160,4 @@ operator `~/.swm` tree as writable data for the hub.
 
 ## Related
 
-- Hub-to-node HTTPS is a separate hardening item (issue 32).
 - Sky Port trust model: swm-core `HOWTO/SECURITY.md`

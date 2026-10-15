@@ -44,6 +44,10 @@ if _security.ssl_cert and _security.ssl_key:
     c.JupyterHub.ssl_cert = _security.ssl_cert
     c.JupyterHub.ssl_key = _security.ssl_key
 
+c.JupyterHub.internal_ssl = _security.internal_ssl
+if _security.trusted_alt_names:
+    c.JupyterHub.trusted_alt_names = list(_security.trusted_alt_names)
+
 if _security.insecure_auth and _security.authenticator_class == AUTHENTICATOR_DUMMY:
     # Local demos only; resolve_hub_security already enforced loopback bind.
     pass

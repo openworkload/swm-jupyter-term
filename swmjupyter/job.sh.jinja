@@ -28,7 +28,21 @@ export JUPYTERHUB_API_URL={{ job_info["hub_url"] }}
 export JUPYTER_RUNTIME_DIR=/tmp
 export JUPYTERHUB_USER=$USER
 export JUPYTERHUB_SERVICE_PREFIX=/user/$USER
-export JUPYTERHUB_SERVICE_URL=http://0.0.0.0:{{ job_info["server_port"] }}
+export JUPYTERHUB_SERVICE_URL={{ job_info["service_scheme"] }}://0.0.0.0:{{ job_info["server_port"] }}
+{% if job_info["internal_ssl"] %}
+SSL_KEY_FILE={{ job_info["ssl_key_file"] }}
+SSL_CERT_FILE={{ job_info["ssl_cert_file"] }}
+SSL_CA_FILE={{ job_info["ssl_ca_file"] }}
+for ssl_file in "$SSL_KEY_FILE" "$SSL_CERT_FILE" "$SSL_CA_FILE"; do
+  if [ ! -f "$ssl_file" ]; then
+    echo "Missing $ssl_file (expected via #SWM input-files for internal SSL)" >&2
+    exit 1
+  fi
+done
+export JUPYTERHUB_SSL_KEYFILE="$SSL_KEY_FILE"
+export JUPYTERHUB_SSL_CERTFILE="$SSL_CERT_FILE"
+export JUPYTERHUB_SSL_CLIENT_CA="$SSL_CA_FILE"
+{% endif %}
 export JUPYTERHUB_OAUTH_ACCESS_SCOPES="[\"access:servers!server=$USER/\", \"access:servers!user=$USER\"]"
 export NVIDIA_VISIBLE_DEVICES=all
 

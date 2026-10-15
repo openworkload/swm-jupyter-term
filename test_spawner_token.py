@@ -57,6 +57,11 @@ class TestJobScriptTemplateNoToken(unittest.TestCase):
             "ports": "8888/tcp/in,8081/tcp/out",
             "jupyterhub_client_id": "jupyterhub-user-alice",
             "hub_url": "http://localhost:8081/hub/api",
+            "service_scheme": "http",
+            "internal_ssl": False,
+            "ssl_key_file": "jupyterhub_ssl_key.pem",
+            "ssl_cert_file": "jupyterhub_ssl_cert.pem",
+            "ssl_ca_file": "jupyterhub_ssl_ca.pem",
             "input_files": ["/tmp/spool/jupyterhub_api_token"],
             "output_files": [],
             "storage": "swmblobcontainer",
@@ -95,6 +100,8 @@ class TestRenderJobScriptIntegration(unittest.TestCase):
             spawner._jupyterhub_host = "localhost"
             spawner._jupyter_singleuser_port = 8888
             spawner._spool_dir = tempfile.TemporaryDirectory(prefix=".swmjupyter_", dir=spool_parent)
+            spawner.internal_ssl = False
+            spawner._staged_ssl_paths = {}
             spawner.user_options = {
                 "cloud-image": "ubuntu",
                 "flavor": "m1.small",

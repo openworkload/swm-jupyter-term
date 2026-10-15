@@ -33,6 +33,8 @@ class HubSecuritySettings:
     require_tls: bool
     ssl_cert: str
     ssl_key: str
+    internal_ssl: bool
+    trusted_alt_names: tuple[str, ...]
     oauth_client_id: str
     oauth_client_secret: str
     oauth_authorize_url: str
@@ -46,6 +48,12 @@ def _truthy(value: Optional[str]) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _falsy(value: Optional[str]) -> bool:
+    if value is None:
+        return False
+    return value.strip().lower() in {"0", "false", "no", "off"}
+
+
 def _is_loopback(bind_ip: str) -> bool:
     return bind_ip.strip().lower() in _LOOPBACK
 
@@ -55,6 +63,44 @@ def docker_publish_arg(bind_ip: str, port: int) -> str:
     if _is_loopback(bind_ip):
         return f"127.0.0.1:{port}:{port}"
     return f"{port}:{port}"
+
+
+def resolve_internal_ssl(env: Mapping[str, str], bind_ip: str) -> bool:
+    """Whether hub↔singleuser internal SSL is enabled.
+
+    Default is on. ``SWM_JUPYTER_INTERNAL_SSL=0`` is allowed only on a loopback
+    bind (lab). Non-loopback plain HTTP is refused.
+    """
+    raw = env.get("SWM_JUPYTER_INTERNAL_SSL")
+    if raw is None or not str(raw).strip():
+        return True
+    if _truthy(raw):
+        return True
+    if _falsy(raw):
+        if not _is_loopback(bind_ip):
+            raise HubSecurityError(
+                "SWM_JUPYTER_INTERNAL_SSL=0 is only allowed when SWM_JUPYTER_BIND_IP is loopback"
+            )
+        return False
+    raise HubSecurityError(f"Invalid SWM_JUPYTER_INTERNAL_SSL={raw!r}; use 1/0 or true/false")
+
+
+def resolve_trusted_alt_names(env: Mapping[str, str]) -> tuple[str, ...]:
+    """DNS/IP SANs for the hub internal certificate (remote singleuser verify)."""
+    names: list[str] = ["DNS:localhost", "IP:127.0.0.1"]
+    host = (env.get("SWM_JUPYTER_HUB_CONNECT_HOST") or env.get("SWM_JUPYTER_HUB_HOSTNAME") or "").strip()
+    if not host:
+        # Spawner default host name used in job scripts when conf omits jupyterhub_host.
+        host = "localhost"
+    if host.lower() not in {"localhost", "127.0.0.1", "::1"}:
+        names.append(f"DNS:{host}")
+    extra = (env.get("SWM_JUPYTER_TRUSTED_ALT_NAMES") or "").strip()
+    if extra:
+        for part in extra.split(","):
+            item = part.strip()
+            if item and item not in names:
+                names.append(item)
+    return tuple(names)
 
 
 def resolve_hub_security(env: Optional[Mapping[str, str]] = None) -> HubSecuritySettings:
@@ -69,6 +115,9 @@ def resolve_hub_security(env: Optional[Mapping[str, str]] = None) -> HubSecurity
       SWM_JUPYTER_ADMIN_USER: optional admin username for NativeAuthenticator
       SWM_JUPYTER_ENV: production triggers TLS requirement when not on loopback
       SWM_JUPYTER_SSL_CERT / SWM_JUPYTER_SSL_KEY: optional TLS material for the hub
+      SWM_JUPYTER_INTERNAL_SSL: hub↔node mTLS (default on; 0 only on loopback)
+      SWM_JUPYTER_HUB_CONNECT_HOST: hostname singleusers use to reach the hub API
+      SWM_JUPYTER_TRUSTED_ALT_NAMES: extra comma-separated SANs (DNS:… / IP:…)
       OAUTH2_CLIENT_ID / OAUTH2_CLIENT_SECRET / OAUTH2_AUTHORIZE_URL /
       OAUTH2_TOKEN_URL / OAUTH2_USERDATA_URL: required when AUTH=oauth
     """
@@ -99,6 +148,8 @@ def resolve_hub_security(env: Optional[Mapping[str, str]] = None) -> HubSecurity
     ssl_key = (env.get("SWM_JUPYTER_SSL_KEY") or "").strip()
     production = (env.get("SWM_JUPYTER_ENV") or "").strip().lower() == "production"
     require_tls = production and not _is_loopback(bind_ip)
+    internal_ssl = resolve_internal_ssl(env, bind_ip)
+    trusted_alt_names = resolve_trusted_alt_names(env)
 
     if require_tls and (not ssl_cert or not ssl_key):
         raise HubSecurityError(
@@ -125,6 +176,8 @@ def resolve_hub_security(env: Optional[Mapping[str, str]] = None) -> HubSecurity
             require_tls=False,
             ssl_cert=ssl_cert,
             ssl_key=ssl_key,
+            internal_ssl=internal_ssl,
+            trusted_alt_names=trusted_alt_names,
             oauth_client_id="",
             oauth_client_secret="",  # nosec B106
             oauth_authorize_url="",
@@ -162,6 +215,8 @@ def resolve_hub_security(env: Optional[Mapping[str, str]] = None) -> HubSecurity
             require_tls=require_tls,
             ssl_cert=ssl_cert,
             ssl_key=ssl_key,
+            internal_ssl=internal_ssl,
+            trusted_alt_names=trusted_alt_names,
             oauth_client_id=oauth_client_id,
             oauth_client_secret=oauth_client_secret,
             oauth_authorize_url=oauth_authorize_url,
@@ -183,6 +238,8 @@ def resolve_hub_security(env: Optional[Mapping[str, str]] = None) -> HubSecurity
         require_tls=require_tls,
         ssl_cert=ssl_cert,
         ssl_key=ssl_key,
+        internal_ssl=internal_ssl,
+        trusted_alt_names=trusted_alt_names,
         oauth_client_id="",
         oauth_client_secret="",  # nosec B106
         oauth_authorize_url="",
