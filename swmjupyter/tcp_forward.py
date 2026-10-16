@@ -63,10 +63,12 @@ class LocalTcpForward:
         self.local_port = 0
 
     def _serve(self) -> None:
-        assert self._listen is not None
+        listen = self._listen
+        if listen is None:
+            return
         while not self._stop.is_set():
             try:
-                client, _addr = self._listen.accept()
+                client, _addr = listen.accept()
             except socket.timeout:
                 continue
             except OSError:
